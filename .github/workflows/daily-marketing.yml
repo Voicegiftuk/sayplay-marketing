@@ -1,0 +1,62 @@
+name: SayPlay Daily Marketing
+
+on:
+  schedule:
+    # Runs at 9:00 AM UTC (10:00 AM UK time in winter)
+    - cron: '0 9 * * *'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  generate-content:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: 📦 Install dependencies
+        run: pip install google-generativeai
+      
+      - name: 🤖 Run marketing system
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python sayplay_marketing_system.py
+      
+      - name: 💾 Commit generated content
+        run: |
+          git config --local user.email "bot@voicegift.uk"
+          git config --local user.name "SayPlay Marketing Bot"
+          git add _posts/ content/ emails/ reports/
+          git diff --quiet && git diff --staged --quiet || git commit -m "🤖 Daily content: $(date '+%Y-%m-%d')"
+      
+      - name: 🚀 Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+```
+
+5. **Scroll down**
+
+6. **Commit message should say:** "Create daily-marketing.yml"
+
+7. **Click:** "Commit changes"
+
+---
+
+### ✅ CHECKPOINT:
+
+**You should see a message:** "This workflow has a workflow_dispatch event trigger"
+
+**Reply with:**
+```
+✅ Workflow file added!
