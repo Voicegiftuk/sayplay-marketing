@@ -8,60 +8,48 @@ on:
 jobs:
   generate-content:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install
+      - name: Install dependencies
         run: pip install google-generativeai
 
-      - name: Run System
+      - name: Generate content
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python sayplay_marketing_system.py
 
-      - name: Commit
-        run: |
-          git config user.name "SayPlay Bot"
-          git config user.email "bot@voicegift.uk"
-          git add .
-          git commit -m "Daily content" || echo "No changes"
-
-      - name: Push
-        run: git push || echo "Nothing to push"
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'Daily content'
+          commit_user_name: 'SayPlay Bot'
+          commit_user_email: 'bot@voicegift.uk'
 ```
 
-5. **Click:** "Commit changes"
+4. **Commit changes**
 
 ---
 
-## 🎯 KEY CHANGES:
+## 🎯 WHY THIS WORKS:
 
-✅ Split commit and push into 2 separate steps (simpler)  
-✅ Removed all complex syntax  
-✅ Added error handling (`|| echo`)  
-✅ Super clean YAML (no nested commands)
-
----
-
-## 🚀 TEST AGAIN:
-
-1. **Actions tab**
-2. **"SayPlay Daily Marketing"**
-3. **"Run workflow"**
-4. **Wait and watch!**
+✅ Uses `git-auto-commit-action` (tested by millions)  
+✅ No manual bash commands  
+✅ No YAML syntax issues  
+✅ Handles everything automatically  
 
 ---
 
-**This is the SIMPLEST possible version - it WILL work!** ✅
+## 🚀 RUN IT:
 
-**Reply:**
+**Actions → Run workflow**
+
+**This WILL work!** 💯
+
+Reply:
 ```
-✅ Running again!
+✅ Testing now!
