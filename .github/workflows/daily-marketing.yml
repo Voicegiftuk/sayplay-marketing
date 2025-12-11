@@ -1,4 +1,4 @@
-name: SayPlay Daily Marketing
+name: SayPlay Marketing Bot
 
 on:
   workflow_dispatch:
@@ -8,6 +8,10 @@ on:
 jobs:
   generate-content:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -29,24 +33,42 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'Daily content'
+          commit_user_name: 'SayPlay Bot'
+          commit_user_email: 'bot@voicegift.uk'
 ```
-
-4. **Click:** "Commit changes"
-
-5. **Wait 10 seconds**
-
-6. **Go back to Actions tab**
-
-7. **You should NOW see "SayPlay Daily Marketing" on the left!**
 
 ---
 
-## 🎯 DO THIS NOW:
+## 🔑 KEY CHANGES:
 
-**Click this link to edit the file:**
+1. **Line 1:** Changed name from "SayPlay Daily Marketing" to **"SayPlay Marketing Bot"** (forces GitHub to re-index)
 
-👉 https://github.com/Voicegiftuk/sayplay-marketing/edit/main/.github/workflows/daily-marketing.yml
+2. **Line 8-9:** Added `permissions: contents: write` (ensures it can commit)
 
-**Replace with the code above, then tell me:**
-```
-✅ Replaced the file!
+3. **Line 30-32:** Added commit user details (cleaner commits)
+
+---
+
+## 📋 HOW TO UPDATE:
+
+1. **Go to:** https://github.com/Voicegiftuk/sayplay-marketing/blob/main/.github/workflows/daily-marketing.yml
+
+2. **Click:** ✏️ Edit (pencil icon)
+
+3. **Select ALL** (Ctrl+A or Cmd+A)
+
+4. **DELETE everything**
+
+5. **PASTE the code above**
+
+6. **Scroll down, click:** "Commit changes"
+
+7. **WAIT 60 SECONDS** ⏰ (Important! GitHub needs time to re-index)
+
+8. **Go to Actions tab**
+
+9. **Click on:** "SayPlay Marketing Bot" (left sidebar)
+
+10. **You should NOW see:** "Run workflow" button! 🎉
+
+---
