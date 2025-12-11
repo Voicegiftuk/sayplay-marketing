@@ -1,55 +1,52 @@
 name: SayPlay Daily Marketing
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 9 * * *'
-  workflow_dispatch:
 
 jobs:
   generate-content:
     runs-on: ubuntu-latest
-    
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-python@v4
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
-      - name: Install dependencies
+      
+      - name: Install
         run: pip install google-generativeai
-
-      - name: Generate content
+      
+      - name: Generate
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python sayplay_marketing_system.py
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      
+      - name: Commit
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'Daily content'
-          commit_user_name: 'SayPlay Bot'
-          commit_user_email: 'bot@voicegift.uk'
 ```
 
-4. **Commit changes**
+4. **Click:** "Commit changes"
+
+5. **Wait 10 seconds**
+
+6. **Go back to Actions tab**
+
+7. **You should NOW see "SayPlay Daily Marketing" on the left!**
 
 ---
 
-## 🎯 WHY THIS WORKS:
+## 🎯 DO THIS NOW:
 
-✅ Uses `git-auto-commit-action` (tested by millions)  
-✅ No manual bash commands  
-✅ No YAML syntax issues  
-✅ Handles everything automatically  
+**Click this link to edit the file:**
 
----
+👉 https://github.com/Voicegiftuk/sayplay-marketing/edit/main/.github/workflows/daily-marketing.yml
 
-## 🚀 RUN IT:
-
-**Actions → Run workflow**
-
-**This WILL work!** 💯
-
-Reply:
+**Replace with the code above, then tell me:**
 ```
-✅ Testing now!
+✅ Replaced the file!
