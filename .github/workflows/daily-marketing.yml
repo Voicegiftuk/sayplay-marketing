@@ -8,67 +8,37 @@ on:
 jobs:
   generate-content:
     runs-on: ubuntu-latest
-    
     permissions:
       contents: write
-    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
       
-      - name: Install
-        run: pip install google-generativeai
+      - run: pip install google-generativeai
       
-      - name: Generate
+      - run: python sayplay_marketing_system.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python sayplay_marketing_system.py
       
-      - name: Commit
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: 'Daily content'
-          commit_user_name: 'SayPlay Bot'
-          commit_user_email: 'bot@voicegift.uk'
+      - run: |
+          git config user.name "SayPlay Bot"
+          git config user.email "bot@voicegift.uk"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Daily content $(date +%Y-%m-%d)"
+            git push
+          fi
 ```
 
----
+5. **Click:** "Commit changes"
 
-## 🔑 KEY CHANGES:
+6. **Wait 10 seconds**
 
-1. **Line 1:** Changed name from "SayPlay Daily Marketing" to **"SayPlay Marketing Bot"** (forces GitHub to re-index)
+7. **Go to Actions tab**
 
-2. **Line 8-9:** Added `permissions: contents: write` (ensures it can commit)
-
-3. **Line 30-32:** Added commit user details (cleaner commits)
-
----
-
-## 📋 HOW TO UPDATE:
-
-1. **Go to:** https://github.com/Voicegiftuk/sayplay-marketing/blob/main/.github/workflows/daily-marketing.yml
-
-2. **Click:** ✏️ Edit (pencil icon)
-
-3. **Select ALL** (Ctrl+A or Cmd+A)
-
-4. **DELETE everything**
-
-5. **PASTE the code above**
-
-6. **Scroll down, click:** "Commit changes"
-
-7. **WAIT 60 SECONDS** ⏰ (Important! GitHub needs time to re-index)
-
-8. **Go to Actions tab**
-
-9. **Click on:** "SayPlay Marketing Bot" (left sidebar)
-
-10. **You should NOW see:** "Run workflow" button! 🎉
-
----
+8. **Click:** "Run workflow"
