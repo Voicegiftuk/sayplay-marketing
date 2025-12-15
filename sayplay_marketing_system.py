@@ -54,7 +54,7 @@ if not Config.GEMINI_API_KEY:
     exit(1)
 
 genai.configure(api_key=Config.GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # ==============================================
 # UTILITIES
