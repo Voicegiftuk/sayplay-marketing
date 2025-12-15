@@ -1,44 +1,22 @@
-name: SayPlay Marketing Bot
+name: SayPlay Marketing
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 9 * * *'
 
 jobs:
-  generate-content:
+  run:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v3
-      
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
       - run: pip install google-generativeai
-      
       - run: python sayplay_marketing_system.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      
-      - run: |
-          git config user.name "SayPlay Bot"
-          git config user.email "bot@voicegift.uk"
-          git add -A
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Daily content $(date +%Y-%m-%d)"
-            git push
-          fi
-```
-
-5. **Click:** "Commit changes"
-
-6. **Wait 10 seconds**
-
-7. **Go to Actions tab**
-
-8. **Click:** "Run workflow"
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Daily content
