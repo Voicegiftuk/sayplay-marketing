@@ -2,7 +2,7 @@
 """
 SayPlay Autonomous Marketing System - PRODUCTION VERSION
 Generates SEO content + captures leads + makes sales
-Cost: £0/month using Gemini Pro
+Cost: £0/month using Gemini
 """
 
 import os
@@ -12,10 +12,10 @@ from datetime import datetime
 from pathlib import Path
 
 try:
-    import google.generativeai as genai
+    from google import genai
 except ImportError:
-    print("ERROR: google-generativeai not installed")
-    print("Run: pip install google-generativeai")
+    print("ERROR: google-genai not installed")
+    print("Run: pip install google-genai")
     exit(1)
 
 # ==============================================
@@ -47,16 +47,22 @@ class Config:
         ]
     }
 
-# Initialize Gemini (but allow fallback if fails)
+# Initialize Gemini with new API (but allow fallback if fails)
 API_AVAILABLE = False
+client = None
+
 if Config.GEMINI_API_KEY:
     try:
-        genai.configure(api_key=Config.GEMINI_API_KEY)
-        model = genai.GenerativeModel('gemini-pro')
+        client = genai.Client(api_key=Config.GEMINI_API_KEY)
+        # Test connection
+        test_response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents='test'
+        )
         API_AVAILABLE = True
-        print("✅ Gemini API configured")
+        print("✅ Gemini API configured (new SDK)")
     except Exception as e:
-        print(f"⚠️  Gemini API unavailable: {e}")
+        print(f"⚠️  Gemini API unavailable: {str(e)[:100]}")
         print("📦 Using fallback content generation")
         API_AVAILABLE = False
 else:
@@ -87,13 +93,16 @@ def save_json(data, filepath):
     return filepath
 
 def call_gemini(prompt, max_retries=2):
-    """Call Gemini API with retries and fallback"""
-    if not API_AVAILABLE:
+    """Call Gemini API with new SDK"""
+    if not API_AVAILABLE or client is None:
         return None
     
     for attempt in range(max_retries):
         try:
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt
+            )
             return response.text
         except Exception as e:
             print(f"   ⚠️  API call failed (attempt {attempt + 1}/{max_retries}): {str(e)[:100]}")
@@ -619,7 +628,7 @@ class Reporter:
         """Create daily report"""
         
         ai_mode = 'Active' if API_AVAILABLE else 'Fallback Templates'
-        ai_powered = 'Powered by Gemini Pro' if API_AVAILABLE else 'Using Template Fallbacks'
+        ai_powered = 'Powered by Gemini 2.5 Flash' if API_AVAILABLE else 'Using Template Fallbacks'
         
         report = f"""
 ╔═══════════════════════════════════════════════╗
