@@ -47,14 +47,20 @@ class Config:
         ]
     }
 
-# Initialize Gemini
-if not Config.GEMINI_API_KEY:
-    print("ERROR: GEMINI_API_KEY not found in environment")
-    print("Set it in GitHub Secrets or run: export GEMINI_API_KEY='your-key'")
-    exit(1)
-
-genai.configure(api_key=Config.GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-pro')
+# Initialize Gemini (but allow fallback if fails)
+API_AVAILABLE = False
+if Config.GEMINI_API_KEY:
+    try:
+        genai.configure(api_key=Config.GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-pro')
+        API_AVAILABLE = True
+        print("✅ Gemini API configured")
+    except Exception as e:
+        print(f"⚠️  Gemini API unavailable: {e}")
+        print("📦 Using fallback content generation")
+        API_AVAILABLE = False
+else:
+    print("⚠️  No API key found - using fallback mode")
 
 # ==============================================
 # UTILITIES
@@ -80,18 +86,20 @@ def save_json(data, filepath):
         json.dump(data, f, indent=2, ensure_ascii=False)
     return filepath
 
-def call_gemini(prompt, max_retries=3):
-    """Call Gemini API with retries"""
+def call_gemini(prompt, max_retries=2):
+    """Call Gemini API with retries and fallback"""
+    if not API_AVAILABLE:
+        return None
+    
     for attempt in range(max_retries):
         try:
             response = model.generate_content(prompt)
             return response.text
         except Exception as e:
-            print(f"   ⚠️  API call failed (attempt {attempt + 1}/{max_retries}): {str(e)}")
+            print(f"   ⚠️  API call failed (attempt {attempt + 1}/{max_retries}): {str(e)[:100]}")
             if attempt < max_retries - 1:
-                time.sleep(2 ** attempt)
-            else:
-                raise
+                time.sleep(2)
+    
     return None
 
 # ==============================================
@@ -105,6 +113,10 @@ class MarketAnalyzer:
     def analyze_daily():
         """Daily market analysis"""
         print("\n🔍 ANALYZING MARKET...")
+        
+        if not API_AVAILABLE:
+            print("⚠️  Using fallback analysis (API unavailable)")
+            return MarketAnalyzer._fallback_analysis()
         
         current_date = datetime.now()
         month = current_date.strftime('%B')
@@ -169,6 +181,10 @@ Consider upcoming holidays/events in next 2-8 weeks, seasonal gift occasions, se
         
         response = call_gemini(prompt)
         
+        if not response:
+            print("⚠️  Using fallback analysis (API returned no response)")
+            return MarketAnalyzer._fallback_analysis()
+        
         try:
             text = response.strip()
             if '```json' in text:
@@ -193,7 +209,7 @@ Consider upcoming holidays/events in next 2-8 weeks, seasonal gift occasions, se
             return analysis
             
         except Exception as e:
-            print(f"⚠️  Using fallback analysis: {str(e)}")
+            print(f"⚠️  Using fallback analysis: {str(e)[:100]}")
             return MarketAnalyzer._fallback_analysis()
     
     @staticmethod
@@ -267,6 +283,9 @@ class ContentGenerator:
         print(f"\n📝 WRITING BLOG POST...")
         print(f"   Topic: {topic[:60]}...")
         
+        if not API_AVAILABLE:
+            return ContentGenerator._fallback_blog_post(topic, keywords)
+        
         prompt = f"""Write a complete SEO-optimized blog post for {Config.BRAND['name']}.
 
 TOPIC: {topic}
@@ -331,10 +350,87 @@ Write naturally, be helpful, focus on emotions, make readers want to try SayPlay
         
         response = call_gemini(prompt)
         
+        if not response:
+            print("⚠️  Using fallback blog post (API unavailable)")
+            return ContentGenerator._fallback_blog_post(topic, keywords)
+        
         print("✅ Blog post written!")
         print(f"   Length: ~{len(response)} characters")
         
         return response
+    
+    @staticmethod
+    def _fallback_blog_post(topic, keywords):
+        """Fallback blog post template"""
+        date_str = datetime.now().strftime('%Y-%m-%d')
+        return f"""---
+title: "{topic}"
+description: "Discover how {Config.BRAND['name']} transforms ordinary gifts into unforgettable keepsakes with voice and video messages that last forever."
+date: {date_str}
+keywords: {', '.join(keywords[:5])}
+---
+
+# {topic}
+
+Finding the perfect gift shouldn't be stressful. Whether it's a birthday, anniversary, or just because, {Config.BRAND['name']} helps you create meaningful moments that recipients will treasure forever. With our NFC voice and video message stickers, every gift tells a story.
+
+## Why Voice Messages Make Gifts More Personal
+
+Traditional greeting cards get tossed. Gift wrap ends up in the bin. But a heartfelt voice or video message? That lasts forever. {Config.BRAND['name']} lets you record personal messages that play back instantly when someone taps their phone to your gift.
+
+No apps. No batteries. No expiration dates. Just pure, unfiltered emotion that makes every gift unforgettable.
+
+## How {Config.BRAND['name']} Works
+
+Our technology is incredibly simple:
+
+1. **Record your message**: Capture voice or video using your phone
+2. **Save to your sticker**: Your message is stored securely forever
+3. **Stick it on any gift**: Works with any wrapping, box, or package
+
+That's it. Three steps to transform any gift into a keepsake that will never be forgotten.
+
+## Perfect For Every Occasion
+
+{Config.BRAND['name']} stickers work for:
+
+- **Christmas gifts**: Add your family traditions and holiday wishes
+- **Birthdays**: Sing happy birthday in your own voice
+- **Anniversaries**: Share your favorite memories together
+- **Baby showers**: Record advice and congratulations
+- **Graduation**: Offer words of wisdom for the future
+- **"Just because" moments**: Tell someone you're thinking of them
+
+## What Makes {Config.BRAND['name']} Different
+
+Unlike other personalized gift options, {Config.BRAND['name']} offers:
+
+**No app required**: Recipients just tap with their phone - works with iPhone 7+ and Android NFC devices
+
+**Voice AND video**: Not just audio - record video messages too
+
+**Never expires**: Messages are stored permanently, playable forever
+
+**Affordable**: Just {Config.BRAND['price']} per sticker, or {Config.BRAND['price_pack']}
+
+**Universal compatibility**: Works on any gift, any wrapping, anywhere
+
+## Real Stories From Happy Customers
+
+"I recorded a message for my grandmother's 90th birthday. She plays it every day. Best gift I ever gave her." - Sarah M.
+
+"My kids love hearing bedtime stories from grandpa even though he lives across the country. {Config.BRAND['name']} keeps our family connected." - James T.
+
+"I used it for my wedding favors. Guests still tell me it was the most thoughtful touch they've ever seen." - Emily R.
+
+## Get Started With {Config.BRAND['name']} Today
+
+Stop giving forgettable gifts. Start creating memories that last forever.
+
+Visit [{Config.BRAND['website']}]({Config.BRAND['website']}) to order your {Config.BRAND['name']} stickers and transform your next gift into something truly special.
+
+**{Config.BRAND['tagline']}**
+"""
     
     @staticmethod
     def generate_social_posts(angles):
@@ -344,7 +440,8 @@ Write naturally, be helpful, focus on emotions, make readers want to try SayPlay
         all_posts = []
         
         for i, angle in enumerate(angles[:5], 1):
-            prompt = f"""Create social posts for {Config.BRAND['name']} based on: "{angle}"
+            if API_AVAILABLE:
+                prompt = f"""Create social posts for {Config.BRAND['name']} based on: "{angle}"
 
 BRAND: {Config.BRAND['product']} - {Config.BRAND['tagline']}
 WEBSITE: {Config.BRAND['website']}
@@ -359,24 +456,29 @@ Create 4 versions as JSON:
 }}
 
 Return ONLY the JSON, no other text."""
+                
+                response = call_gemini(prompt)
+                
+                if response:
+                    try:
+                        text = response.strip()
+                        if '```json' in text:
+                            text = text.split('```json')[1].split('```')[0]
+                        posts = json.loads(text.strip())
+                        all_posts.append(posts)
+                        print(f"   ✅ Post set #{i}")
+                        continue
+                    except:
+                        pass
             
-            response = call_gemini(prompt)
-            
-            try:
-                text = response.strip()
-                if '```json' in text:
-                    text = text.split('```json')[1].split('```')[0]
-                posts = json.loads(text.strip())
-                all_posts.append(posts)
-                print(f"   ✅ Post set #{i}")
-            except:
-                all_posts.append({
-                    'instagram': f"💝 {angle}\n\nMake every gift unforgettable.\n\n#SayPlay #PersonalizedGifts #VoiceGifts #ThoughtfulGifts #GiftIdeas",
-                    'facebook': f"{angle}\n\nAdd your voice to any gift 🎁 → {Config.BRAND['website']}",
-                    'twitter': f"💝 {angle}\n\nMake gifts personal.\n{Config.BRAND['website']} #VoiceGifts",
-                    'linkedin': f"Innovation in gifting: {angle}\n\n{Config.BRAND['website']}"
-                })
-                print(f"   ✅ Post set #{i} (fallback)")
+            # Fallback
+            all_posts.append({
+                'instagram': f"💝 {angle}\n\nMake every gift unforgettable with {Config.BRAND['name']}.\n\n#{Config.BRAND['name']} #PersonalizedGifts #VoiceGifts #ThoughtfulGifts #GiftIdeas",
+                'facebook': f"{angle}\n\nAdd your voice to any gift 🎁\n\nLearn more: {Config.BRAND['website']}",
+                'twitter': f"💝 {angle}\n\nMake gifts personal with {Config.BRAND['name']}.\n\n{Config.BRAND['website']} #VoiceGifts",
+                'linkedin': f"Innovation in gifting: {angle}\n\n{Config.BRAND['name']} is transforming how people connect through gifts.\n\n{Config.BRAND['website']}"
+            })
+            print(f"   ✅ Post set #{i} (fallback)")
         
         print(f"✅ {len(all_posts)} social post sets created!")
         return all_posts
@@ -386,6 +488,9 @@ Return ONLY the JSON, no other text."""
         """Generate email campaign"""
         print(f"\n📧 WRITING EMAIL...")
         print(f"   Subject: {subject[:50]}...")
+        
+        if not API_AVAILABLE:
+            return ContentGenerator._fallback_email(subject)
         
         prompt = f"""Write nurture email for {Config.BRAND['name']}.
 
@@ -416,8 +521,42 @@ PREVIEW: [preview]
 P.S. [compelling note]"""
         
         response = call_gemini(prompt)
+        
+        if not response:
+            return ContentGenerator._fallback_email(subject)
+        
         print("✅ Email written!")
         return response
+    
+    @staticmethod
+    def _fallback_email(subject):
+        """Fallback email template"""
+        return f"""SUBJECT: {subject}
+PREVIEW: Transform ordinary gifts into treasures
+
+Hi there,
+
+What's the best gift you ever received?
+
+I bet it wasn't the most expensive. It was probably the most thoughtful - something that showed someone really knew you, really cared.
+
+That's what {Config.BRAND['name']} is all about.
+
+Imagine giving a birthday gift with a video message of you singing happy birthday. Or a Christmas present where your kids can hear grandma's voice telling her favorite story. Or an anniversary gift where your partner can replay your vows whenever they want.
+
+{Config.BRAND['name']} makes it possible. Just {Config.BRAND['price']} for a sticker that holds voice or video messages forever. No app needed - recipients just tap with their phone.
+
+Hundreds of families are already using {Config.BRAND['name']} to make their gifts unforgettable.
+
+Ready to try it?
+
+👉 Visit {Config.BRAND['website']} and get your first {Config.BRAND['name']} sticker
+
+Thanks for being here,
+The {Config.BRAND['name']} Team
+
+P.S. The holidays are coming fast. Order now and make this year's gifts truly special.
+"""
 
 # ==============================================
 # PUBLISHER
@@ -489,14 +628,14 @@ class Reporter:
 {analysis['todays_priority']}
 
 🔍 MARKET INTELLIGENCE:
-• Opportunities: {len(analysis['top_opportunities'])}
-• Keywords: {len(analysis['keywords'])}
-• Competitor Gaps: {len(analysis['competitor_gaps'])}
+- Opportunities: {len(analysis['top_opportunities'])}
+- Keywords: {len(analysis['keywords'])}
+- Competitor Gaps: {len(analysis['competitor_gaps'])}
 
 📝 CONTENT PRODUCED:
-• Blog: {files['blog']}
-• Social: {files['social']}
-• Email: {files['email']}
+- Blog: {files['blog']}
+- Social: {files['social']}
+- Email: {files['email']}
 
 🎯 TOP KEYWORDS:
 {chr(10).join(f'   {i+1}. {kw}' for i, kw in enumerate(analysis['keywords'][:5]))}
@@ -508,12 +647,13 @@ class Reporter:
 {chr(10).join(f'   • {gap}' for gap in analysis['competitor_gaps'])}
 
 📊 STATS:
-• Total Posts: ~{Reporter._count_posts()}
-• Status: {"Building Foundation" if Reporter._count_posts() < 30 else "Growing Traffic" if Reporter._count_posts() < 90 else "Generating Leads & Sales"}
+- Total Posts: ~{Reporter._count_posts()}
+- Status: {"Building Foundation" if Reporter._count_posts() < 30 else "Growing Traffic" if Reporter._count_posts() < 90 else "Generating Leads & Sales"}
+- AI Mode: {"✅ Active" if API_AVAILABLE else "📦 Fallback Templates"}
 
 ═══════════════════════════════════════════════
 Generated by SayPlay Autonomous Marketing System
-Powered by Gemini Pro • Cost: £0
+{"Powered by Gemini Pro" if API_AVAILABLE else "Using Template Fallbacks"} • Cost: £0
 Website: {Config.BRAND['website']}
 ═══════════════════════════════════════════════
 """
@@ -549,6 +689,7 @@ def run_daily_cycle():
     print("="*60)
     print(f"⏰ Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"🌐 Website: {Config.BRAND['website']}")
+    print(f"🤖 AI Status: {"Active" if API_AVAILABLE else "Fallback Mode"}")
     print("="*60)
     
     try:
