@@ -3,50 +3,36 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 9 * * *'
+
 jobs:
   run:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
       
-      - uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
       
       - name: Install dependencies
         run: pip install -r requirements.txt
       
-      - name: Run Shopify marketing AI
+      - name: Run marketing AI
         run: python sayplay_marketing_system.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SHOPIFY_SHOP: ${{ secrets.SHOPIFY_SHOP }}
           SHOPIFY_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ACCESS_TOKEN }}
       
-      - name: Commit backup files
+      - name: Commit changes
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add -A
-          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Daily Shopify content [$(date +'%Y-%m-%d')]" && git push)
-```
-
-**Click "Commit changes"**
-
----
-
-### **File 3: Python Script**
-Go to: https://github.com/Voicegiftuk/sayplay-marketing/edit/main/sayplay_marketing_system.py
-
-**This is the big one - I'll give you the simplified Shopify-only version (no Twitter/LinkedIn yet):**
-
-**Replace everything with:** *(scroll down for the code)*
-
----
-
-**Should I give you:**
-```
-A) Simple version - just Shopify blog auto-posting (works now)
-B) Full version - Shopify + Twitter + Facebook + LinkedIn (need more API keys)
+          git diff --quiet && git diff --staged --quiet || git commit -m "Daily Shopify content"
+          git push
