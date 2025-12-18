@@ -1,7 +1,7 @@
 
 ╔════════════════════════════════════════════════╗
 ║   SAYPLAY SHOPIFY MARKETING REPORT            ║
-║   December 18, 2025 - 07:24 UTC                       ║
+║   December 18, 2025 - 07:31 UTC                       ║
 ╚════════════════════════════════════════════════╝
 
 🎯 Target Christmas (7 days) shoppers with 2025 content
@@ -9,18 +9,16 @@
 📅 Winter 2025 • December
 
 🔥 TOP KEYWORDS:
-   1. voice message gifts
-   2. personalized gift ideas
-   3. NFC gift cards
-   4. video message gifts
-   5. unique gifts 2025
+   1. personalized gift ideas
+   2. christmas gifts 2025
+   3. winter gift ideas 2025
 
 📝 PUBLISHED:
-- Shopify: ✅ https://u2ckjd-sq.co.uk/blogs/news/voice-message-gifts-2025-guide-sayplay
-- Backup: _posts/2025-12-18-voice-message-gifts.md
+- Shopify: ✅ https://u2ckjd-sq.co.uk/blogs/news/personalized-gift-ideas-2025-guide-sayplay
+- Backup: _posts/2025-12-18-personalized-gift-ideas.md
 
 📊 STATUS:
-- Posts: 3
+- Posts: 4
 - AI: ✅ Gemini
 - Shopify: ✅ Connected
 
