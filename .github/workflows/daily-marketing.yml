@@ -1,4 +1,4 @@
-name: SayPlay Marketing
+name: SayPlay Shopify Marketing
 on:
   workflow_dispatch:
   schedule:
@@ -10,18 +10,43 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
+      
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      - run: pip install -r requirements.txt
-        name: Install dependencies
-      - run: python sayplay_marketing_system.py
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Run Shopify marketing AI
+        run: python sayplay_marketing_system.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      - name: Commit generated content
+          SHOPIFY_SHOP: ${{ secrets.SHOPIFY_SHOP }}
+          SHOPIFY_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ACCESS_TOKEN }}
+      
+      - name: Commit backup files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add -A
-          git diff --quiet && git diff --staged --quiet || git commit -m "Daily marketing content"
-          git push
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Daily Shopify content [$(date +'%Y-%m-%d')]" && git push)
+```
+
+**Click "Commit changes"**
+
+---
+
+### **File 3: Python Script**
+Go to: https://github.com/Voicegiftuk/sayplay-marketing/edit/main/sayplay_marketing_system.py
+
+**This is the big one - I'll give you the simplified Shopify-only version (no Twitter/LinkedIn yet):**
+
+**Replace everything with:** *(scroll down for the code)*
+
+---
+
+**Should I give you:**
+```
+A) Simple version - just Shopify blog auto-posting (works now)
+B) Full version - Shopify + Twitter + Facebook + LinkedIn (need more API keys)
