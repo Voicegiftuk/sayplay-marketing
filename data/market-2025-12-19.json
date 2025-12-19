@@ -1,0 +1,52 @@
+{
+  "date": "2025-12-19",
+  "season": "Winter",
+  "year": 2025,
+  "month": "December",
+  "upcoming_events": [
+    "Christmas (6 days)"
+  ],
+  "trending_keywords": [
+    "personalized gift ideas",
+    "unique gifts 2025",
+    "personalized christmas ornaments",
+    "custom photo gifts",
+    "christmas gifts 2025",
+    "winter gift ideas 2025",
+    "festive personalized gifts 2025"
+  ],
+  "google_trends": [
+    {
+      "keyword": "personalized gift ideas",
+      "interest": 9,
+      "trending": "down",
+      "score": 0
+    },
+    {
+      "keyword": "unique gifts 2025",
+      "interest": 4,
+      "trending": "down",
+      "score": 0
+    }
+  ],
+  "reddit_insights": [],
+  "amazon_trends": [
+    {
+      "product": "Personalized Christmas ornaments",
+      "category": "Seasonal"
+    },
+    {
+      "product": "Custom photo gifts",
+      "category": "Personalized"
+    },
+    {
+      "product": "Experience gift vouchers",
+      "category": "Experiences"
+    }
+  ],
+  "competitor_topics": [],
+  "hot_topics": [
+    "Amazon bestseller category: Seasonal"
+  ],
+  "top_priority": "Capitalize on trending topic: Amazon bestseller category: Seasonal"
+}
