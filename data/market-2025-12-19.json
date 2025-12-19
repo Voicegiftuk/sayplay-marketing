@@ -3,34 +3,31 @@
   "season": "Winter",
   "year": 2025,
   "month": "December",
-  "upcoming_events": [
+  "events": [
     "Christmas (6 days)"
   ],
-  "trending_keywords": [
+  "keywords": [
     "personalized gift ideas",
     "unique gifts 2025",
-    "personalized christmas ornaments",
-    "custom photo gifts",
     "christmas gifts 2025",
-    "winter gift ideas 2025",
-    "festive personalized gifts 2025"
+    "winter gift ideas 2025"
   ],
-  "google_trends": [
+  "trends": [
     {
       "keyword": "personalized gift ideas",
-      "interest": 9,
-      "trending": "down",
-      "score": 0
+      "interest": 2,
+      "recent": 0,
+      "trending": "down"
     },
     {
       "keyword": "unique gifts 2025",
-      "interest": 4,
-      "trending": "down",
-      "score": 0
+      "interest": 9,
+      "recent": 0,
+      "trending": "down"
     }
   ],
-  "reddit_insights": [],
-  "amazon_trends": [
+  "reddit": [],
+  "amazon": [
     {
       "product": "Personalized Christmas ornaments",
       "category": "Seasonal"
@@ -40,13 +37,18 @@
       "category": "Personalized"
     },
     {
-      "product": "Experience gift vouchers",
-      "category": "Experiences"
+      "product": "Voice recording teddy bears",
+      "category": "Tech Gifts"
     }
   ],
-  "competitor_topics": [],
-  "hot_topics": [
-    "Amazon bestseller category: Seasonal"
+  "competitors": [
+    "Gift ideas for hard to buy for people",
+    "Meaningful gifts that last"
   ],
-  "top_priority": "Capitalize on trending topic: Amazon bestseller category: Seasonal"
+  "hot_topics": [
+    "Amazon bestseller: Personalized Christmas ornaments",
+    "Amazon bestseller: Custom photo gifts"
+  ],
+  "buying_intent": 70,
+  "priority": "Target Christmas (6 days) shoppers with urgency"
 }
