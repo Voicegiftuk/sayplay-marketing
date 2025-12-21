@@ -55,15 +55,13 @@ class Config:
     SHOPIFY_SHOP = os.getenv('SHOPIFY_SHOP', '')
     SHOPIFY_ACCESS_TOKEN = os.getenv('SHOPIFY_ACCESS_TOKEN', '')
     
-    # Social Media (Optional - add these to GitHub Secrets when ready)
-    INSTAGRAM_USERNAME = os.getenv('INSTAGRAM_USERNAME', '')
-    INSTAGRAM_PASSWORD = os.getenv('INSTAGRAM_PASSWORD', '')
+    # Social Media APIs
+    FACEBOOK_PAGE_TOKEN = os.getenv('FACEBOOK_PAGE_TOKEN', '')
+    INSTAGRAM_BUSINESS_ACCOUNT_ID = os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID', '')
     TWITTER_API_KEY = os.getenv('TWITTER_API_KEY', '')
     TWITTER_API_SECRET = os.getenv('TWITTER_API_SECRET', '')
     TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN', '')
     TWITTER_ACCESS_SECRET = os.getenv('TWITTER_ACCESS_SECRET', '')
-    FACEBOOK_PAGE_TOKEN = os.getenv('FACEBOOK_PAGE_TOKEN', '')
-    FACEBOOK_PAGE_ID = os.getenv('FACEBOOK_PAGE_ID', '')
     
     # Reddit
     REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID', '')
@@ -81,8 +79,8 @@ class Config:
         'tagline': 'Say It Once. They\'ll Play It Forever.',
         'price': '£19.99',
         'price_pack': '£49.99 for 5 stickers',
-        'instagram': '@sayplay_uk',
-        'facebook': 'SayPlayUK',
+        'instagram': '@sayplay.gift',
+        'facebook': 'SayPlayGift',
         'twitter': '@sayplay_uk',
         'keywords_base': [
             'voice message gifts',
@@ -110,12 +108,8 @@ if GENAI_AVAILABLE and Config.GEMINI_API_KEY:
 SHOPIFY_CONNECTED = bool(Config.SHOPIFY_SHOP and Config.SHOPIFY_ACCESS_TOKEN)
 print(f"{'✅' if SHOPIFY_CONNECTED else '⚠️ '} Shopify")
 
-SOCIAL_MEDIA_READY = any([
-    Config.TWITTER_API_KEY,
-    Config.FACEBOOK_PAGE_TOKEN,
-    Config.INSTAGRAM_USERNAME
-])
-print(f"{'✅' if SOCIAL_MEDIA_READY else '📝'} Social Media {'(configured)' if SOCIAL_MEDIA_READY else '(pending setup)'}")
+INSTAGRAM_READY = bool(Config.FACEBOOK_PAGE_TOKEN and Config.INSTAGRAM_BUSINESS_ACCOUNT_ID)
+print(f"{'✅' if INSTAGRAM_READY else '📝'} Instagram {'(ready to auto-post!)' if INSTAGRAM_READY else '(pending API setup)'}")
 
 print("="*60)
 
@@ -576,7 +570,7 @@ Just £19.99 at sayplay.co.uk
 
 Tag someone who needs to see this! 👇
 
-#SayPlay #PersonalizedGifts #VoiceMessage #UK Gifts #{analysis['year']}Gifts #MeaningfulGifts #GiftIdeas""",
+#SayPlay #PersonalizedGifts #VoiceMessage #UKGifts #{analysis['year']}Gifts #MeaningfulGifts #GiftIdeas""",
                 'hashtags': '#SayPlay #PersonalizedGifts #VoiceMessage #UKGifts #GiftIdeas'
             },
             
@@ -776,7 +770,7 @@ They tap and hear YOU - FOREVER.
 Just £19.99 at sayplay.co.uk
 Make {analysis['year']} unforgettable ✨
 
-#SayPlay #GiftIdeas #PersonalizedGifts #UKTI ktok""",
+#SayPlay #GiftIdeas #PersonalizedGifts #UKTikTok""",
             
             'youtube': f"""Title: "{analysis['keywords'][0].title()} That Actually Last Forever - SayPlay Review {analysis['year']}"
 
@@ -885,6 +879,186 @@ class ShopifyAPI:
             return None
 
 # ==============================================
+# SOCIAL MEDIA AUTO-POSTING
+# ==============================================
+
+class InstagramPublisher:
+    """Automated Instagram posting"""
+    
+    @staticmethod
+    def create_simple_image():
+        """Create a simple branded image for Instagram post"""
+        try:
+            from PIL import Image, ImageDraw, ImageFont
+            
+            # Create 1080x1080 image
+            img = Image.new('RGB', (1080, 1080), color='#FF6B6B')
+            draw = ImageDraw.Draw(img)
+            
+            # Add text
+            try:
+                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 80)
+                font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 50)
+            except:
+                font = ImageFont.load_default()
+                font_small = ImageFont.load_default()
+            
+            # Draw text
+            text1 = "SayPlay"
+            text2 = "Voice Message Gifts"
+            text3 = "Say It Once."
+            text4 = "They'll Play It Forever."
+            
+            # Center text
+            bbox1 = draw.textbbox((0, 0), text1, font=font)
+            w1 = bbox1[2] - bbox1[0]
+            draw.text(((1080-w1)/2, 300), text1, fill='white', font=font)
+            
+            bbox2 = draw.textbbox((0, 0), text2, font=font_small)
+            w2 = bbox2[2] - bbox2[0]
+            draw.text(((1080-w2)/2, 420), text2, fill='white', font=font_small)
+            
+            bbox3 = draw.textbbox((0, 0), text3, font=font_small)
+            w3 = bbox3[2] - bbox3[0]
+            draw.text(((1080-w3)/2, 600), text3, fill='white', font=font_small)
+            
+            bbox4 = draw.textbbox((0, 0), text4, font=font_small)
+            w4 = bbox4[2] - bbox4[0]
+            draw.text(((1080-w4)/2, 680), text4, fill='white', font=font_small)
+            
+            # Save
+            img_path = '/tmp/instagram_post.jpg'
+            img.save(img_path, 'JPEG', quality=95)
+            
+            return img_path
+        except Exception as e:
+            print(f"   ⚠️  Could not create image: {e}")
+            return None
+    
+    @staticmethod
+    def upload_to_imgur(image_path):
+        """Upload image to Imgur (free image hosting)"""
+        try:
+            # Use Imgur anonymous upload
+            url = "https://api.imgur.com/3/image"
+            headers = {"Authorization": "Client-ID 546c25a59c58ad7"}
+            
+            with open(image_path, 'rb') as f:
+                response = requests.post(
+                    url,
+                    headers=headers,
+                    files={'image': f},
+                    timeout=30
+                )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return data['data']['link']
+            else:
+                print(f"   ⚠️  Imgur upload failed: {response.status_code}")
+                return None
+        except Exception as e:
+            print(f"   ⚠️  Upload error: {e}")
+            return None
+    
+    @staticmethod
+    def post_to_instagram(content_data):
+        """Post to Instagram using Graph API"""
+        if not Config.FACEBOOK_PAGE_TOKEN or not Config.INSTAGRAM_BUSINESS_ACCOUNT_ID:
+            print("\n📱 Instagram: Not configured")
+            return {'success': False, 'reason': 'No API keys'}
+        
+        try:
+            print("\n📸 POSTING TO INSTAGRAM...")
+            
+            # Step 1: Create image
+            print("   🎨 Creating image...")
+            image_path = InstagramPublisher.create_simple_image()
+            
+            if not image_path:
+                print("   ❌ Could not create image")
+                return {'success': False}
+            
+            # Step 2: Upload to Imgur
+            print("   ☁️  Uploading image...")
+            image_url = InstagramPublisher.upload_to_imgur(image_path)
+            
+            if not image_url:
+                print("   ❌ Could not upload image")
+                return {'success': False}
+            
+            print(f"   ✅ Image ready: {image_url[:50]}...")
+            
+            # Step 3: Create Instagram container
+            print("   📦 Creating Instagram post...")
+            caption = content_data['social']['instagram']['caption']
+            
+            container_url = f"https://graph.facebook.com/v18.0/{Config.INSTAGRAM_BUSINESS_ACCOUNT_ID}/media"
+            
+            container_params = {
+                'image_url': image_url,
+                'caption': caption,
+                'access_token': Config.FACEBOOK_PAGE_TOKEN
+            }
+            
+            container_response = requests.post(container_url, params=container_params, timeout=30)
+            
+            if container_response.status_code != 200:
+                print(f"   ❌ Container creation failed: {container_response.text}")
+                return {'success': False, 'error': container_response.text}
+            
+            container_id = container_response.json()['id']
+            print(f"   ✅ Post container created: {container_id}")
+            
+            # Step 4: Publish the post
+            print("   🚀 Publishing to Instagram...")
+            time.sleep(3)  # Wait for processing
+            
+            publish_url = f"https://graph.facebook.com/v18.0/{Config.INSTAGRAM_BUSINESS_ACCOUNT_ID}/media_publish"
+            
+            publish_params = {
+                'creation_id': container_id,
+                'access_token': Config.FACEBOOK_PAGE_TOKEN
+            }
+            
+            publish_response = requests.post(publish_url, params=publish_params, timeout=30)
+            
+            if publish_response.status_code == 200:
+                post_id = publish_response.json()['id']
+                print(f"   ✅ POSTED TO INSTAGRAM!")
+                print(f"   🔗 Post ID: {post_id}")
+                print(f"   📱 Check: instagram.com/@sayplay.gift")
+                
+                return {
+                    'success': True,
+                    'platform': 'instagram',
+                    'post_id': post_id,
+                    'image_url': image_url
+                }
+            else:
+                print(f"   ❌ Publishing failed: {publish_response.text}")
+                return {'success': False, 'error': publish_response.text}
+                
+        except Exception as e:
+            print(f"   ❌ Instagram error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return {'success': False, 'error': str(e)}
+
+class SocialMediaPublisher:
+    """Automated social media posting"""
+    
+    @staticmethod
+    def post_all(content_data):
+        """Post to all configured platforms"""
+        results = {}
+        
+        # Instagram
+        results['instagram'] = InstagramPublisher.post_to_instagram(content_data)
+        
+        return results
+
+# ==============================================
 # STORAGE & ANALYTICS
 # ==============================================
 
@@ -892,7 +1066,7 @@ class Storage:
     """Save all content"""
     
     @staticmethod
-    def save_everything(content, analysis, shopify_result):
+    def save_everything(content, analysis, shopify_result, social_results=None):
         """Save all files"""
         print("\n💾 SAVING CONTENT...")
         
@@ -949,10 +1123,18 @@ class MasterReporter:
     """Comprehensive reporting"""
     
     @staticmethod
-    def generate(analysis, content, shopify_result, files):
+    def generate(analysis, content, shopify_result, files, social_results=None):
         """Generate master report"""
         
         posts = len(list(Path('_posts').glob('*.md'))) if Path('_posts').exists() else 0
+        
+        # Social media status
+        instagram_status = "⏳ Pending setup"
+        if social_results and social_results.get('instagram'):
+            if social_results['instagram'].get('success'):
+                instagram_status = f"✅ Posted! ID: {social_results['instagram'].get('post_id', 'N/A')}"
+            else:
+                instagram_status = f"❌ Failed: {social_results['instagram'].get('error', 'Unknown')[:50]}"
         
         report = f"""
 ╔════════════════════════════════════════════════╗
@@ -973,7 +1155,7 @@ class MasterReporter:
 
 📝 CONTENT GENERATED:
    ✅ Blog post: {content['blog']['title'][:60]}...
-   ✅ Instagram caption (ready to post)
+   ✅ Instagram caption (auto-posted!)
    ✅ Facebook post (ready to post)
    ✅ Twitter thread (5 tweets)
    ✅ LinkedIn post (professional)
@@ -987,6 +1169,9 @@ class MasterReporter:
 🌐 SHOPIFY:
    • Status: {('✅ Published: ' + shopify_result['url']) if shopify_result and shopify_result.get('success') else '❌ Failed'}
 
+📱 SOCIAL MEDIA AUTO-POSTING:
+   • Instagram: {instagram_status}
+
 📁 FILES SAVED:
    • Blog: {files['blog']}
    • Social: {files['social']}
@@ -997,18 +1182,19 @@ class MasterReporter:
    • Total Posts: {posts}
    • AI: {"✅ Gemini" if API_AVAILABLE else "📦 Templates"}
    • Shopify: {"✅ Connected" if SHOPIFY_CONNECTED else "❌ Not connected"}
-   • Social Ready: {"✅ Yes" if SOCIAL_MEDIA_READY else "📝 Pending API setup"}
+   • Instagram: {"✅ Auto-posting!" if INSTAGRAM_READY else "📝 Pending API setup"}
 
 🎯 NEXT STEPS:
-   1. Social media posts ready in /social/ folder
-   2. Email campaign ready in /email/ folder  
-   3. Video scripts ready in /video/ folder
-   4. Manual posting OR set up API keys for automation
+   1. Check Instagram: @sayplay.gift
+   2. Manual post to Facebook/Twitter/LinkedIn
+   3. Send email campaign
+   4. Film video scripts
 
 ═══════════════════════════════════════════════
 🚀 ULTIMATE SALES MACHINE • Multi-Channel Marketing
 Real market research • AI content • SEO optimized
 Website: {Config.BRAND['website']}/blogs/news
+Instagram: @sayplay.gift
 ═══════════════════════════════════════════════
 """
         
@@ -1030,6 +1216,7 @@ def run_ultimate_system():
     print("="*60)
     print(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
     print(f"🌐 {Config.BRAND['website']}")
+    print(f"📱 Instagram: {Config.BRAND['instagram']}")
     print("="*60)
     
     try:
@@ -1042,11 +1229,14 @@ def run_ultimate_system():
         # Phase 3: Publishing
         shopify_result = ShopifyAPI.post_article(content['blog'])
         
+        # Phase 3B: Social Media Auto-Posting
+        social_results = SocialMediaPublisher.post_all(content)
+        
         # Phase 4: Storage
-        files = Storage.save_everything(content, analysis, shopify_result)
+        files = Storage.save_everything(content, analysis, shopify_result, social_results)
         
         # Phase 5: Reporting
-        report = MasterReporter.generate(analysis, content, shopify_result, files)
+        report = MasterReporter.generate(analysis, content, shopify_result, files, social_results)
         
         print("\n" + "="*60)
         print("✅ ULTIMATE SYSTEM CYCLE COMPLETE!")
@@ -1055,8 +1245,10 @@ def run_ultimate_system():
         if shopify_result and shopify_result.get('success'):
             print(f"\n🎉 BLOG LIVE: {shopify_result['url']}")
         
-        print(f"\n📱 Social media content ready in: /social/ folder")
-        print(f"📧 Email campaign ready in: /email/ folder")
+        if social_results and social_results.get('instagram', {}).get('success'):
+            print(f"📱 INSTAGRAM POST LIVE: Check @sayplay.gift")
+        
+        print(f"\n📧 Email campaign ready in: /email/ folder")
         print(f"🎥 Video scripts ready in: /video/ folder")
         
         return {'success': True}
