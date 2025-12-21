@@ -1,0 +1,45 @@
+{
+  "schema_markup": {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Voice Message Gifts - 2025 Ultimate Guide | SayPlay",
+    "description": "Discover the best voice message gifts for 2025. SayPlay's NFC voice message stickers create lasting memories. \u00a319.99. Order now at sayplay.co.uk",
+    "author": {
+      "@type": "Organization",
+      "name": "SayPlay"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "SayPlay",
+      "url": "https://sayplay.co.uk"
+    }
+  },
+  "internal_links": [
+    {
+      "text": "How SayPlay Works",
+      "url": "https://sayplay.co.uk/pages/how-it-works"
+    },
+    {
+      "text": "Customer Stories",
+      "url": "https://sayplay.co.uk/pages/reviews"
+    },
+    {
+      "text": "Shop Now",
+      "url": "https://sayplay.co.uk/products"
+    }
+  ],
+  "faq_schema": {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are the best voice message gifts?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SayPlay voice message stickers are the most meaningful voice message gifts because they let you record personal messages that last forever."
+        }
+      }
+    ]
+  }
+}

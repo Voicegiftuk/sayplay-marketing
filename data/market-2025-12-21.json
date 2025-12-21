@@ -1,0 +1,61 @@
+{
+  "date": "2025-12-21",
+  "season": "Winter",
+  "year": 2025,
+  "month": "December",
+  "events": [
+    "Christmas (4 days)"
+  ],
+  "keywords": [
+    "voice message gifts",
+    "personalized gift ideas",
+    "unique gifts 2025",
+    "christmas gifts 2025",
+    "winter gift ideas 2025"
+  ],
+  "trends": [
+    {
+      "keyword": "voice message gifts",
+      "interest": 1,
+      "recent": 0,
+      "trending": "down"
+    },
+    {
+      "keyword": "personalized gift ideas",
+      "interest": 2,
+      "recent": 0,
+      "trending": "down"
+    },
+    {
+      "keyword": "unique gifts 2025",
+      "interest": 3,
+      "recent": 0,
+      "trending": "down"
+    }
+  ],
+  "reddit": [],
+  "amazon": [
+    {
+      "product": "Personalized Christmas ornaments",
+      "category": "Seasonal"
+    },
+    {
+      "product": "Custom photo gifts",
+      "category": "Personalized"
+    },
+    {
+      "product": "Voice recording teddy bears",
+      "category": "Tech Gifts"
+    }
+  ],
+  "competitors": [
+    "Gift ideas for hard to buy for people",
+    "Meaningful gifts that last"
+  ],
+  "hot_topics": [
+    "Amazon bestseller: Personalized Christmas ornaments",
+    "Amazon bestseller: Custom photo gifts"
+  ],
+  "buying_intent": 70,
+  "priority": "Target Christmas (4 days) shoppers with urgency"
+}
