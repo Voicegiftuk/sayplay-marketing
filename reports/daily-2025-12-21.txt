@@ -1,7 +1,7 @@
 
 ╔════════════════════════════════════════════════╗
 ║   🚀 SAYPLAY ULTIMATE SALES MACHINE REPORT    ║
-║   December 21, 2025 - 16:42 UTC                       ║
+║   December 21, 2025 - 16:51 UTC                       ║
 ╚════════════════════════════════════════════════╝
 
 🎯 PRIORITY: Target Christmas (4 days) shoppers with urgency
@@ -33,10 +33,10 @@
    ✅ FAQ structured data
 
 🌐 SHOPIFY:
-   • Status: ✅ Published: https://u2ckjd-sq.co.uk/blogs/news/unique-gifts-2025-2025-ultimate-guide-sayplay-1
+   • Status: ✅ Published: https://u2ckjd-sq.co.uk/blogs/news/unique-gifts-2025-2025-ultimate-guide-sayplay-2
 
 📱 SOCIAL MEDIA AUTO-POSTING:
-   • Instagram: ❌ Failed: Unknown
+   • Instagram: ✅ Posted! ID: 17911429050274013
 
 📁 FILES SAVED:
    • Blog: _posts/2025-12-21-unique-gifts-2025.md
@@ -48,7 +48,7 @@
    • Total Posts: 8
    • AI: ✅ Gemini
    • Shopify: ✅ Connected
-   • Instagram: 📝 Pending API setup
+   • Instagram: ✅ Auto-posting!
 
 🎯 NEXT STEPS:
    1. Check Instagram: @sayplay.gift
