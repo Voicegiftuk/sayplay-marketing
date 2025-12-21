@@ -7,28 +7,21 @@
     "Christmas (4 days)"
   ],
   "keywords": [
-    "voice message gifts",
-    "personalized gift ideas",
     "unique gifts 2025",
+    "personalized gift ideas",
     "christmas gifts 2025",
     "winter gift ideas 2025"
   ],
   "trends": [
     {
-      "keyword": "voice message gifts",
-      "interest": 1,
-      "recent": 0,
-      "trending": "down"
+      "keyword": "unique gifts 2025",
+      "interest": 9,
+      "recent": 100,
+      "trending": "up"
     },
     {
       "keyword": "personalized gift ideas",
-      "interest": 2,
-      "recent": 0,
-      "trending": "down"
-    },
-    {
-      "keyword": "unique gifts 2025",
-      "interest": 3,
+      "interest": 9,
       "recent": 0,
       "trending": "down"
     }
