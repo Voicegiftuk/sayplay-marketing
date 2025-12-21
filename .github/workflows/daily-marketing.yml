@@ -1,9 +1,9 @@
-name: SayPlay Shopify Marketing
+name: SayPlay Final Marketing System
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 9 * * *'
+    - cron: '0 9 * * *'  # Daily at 9am UTC
 
 jobs:
   run:
@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
           
-      - name: Run marketing AI
+      - name: Run Final Marketing System
         run: python sayplay_marketing_system.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -31,11 +31,16 @@ jobs:
           SHOPIFY_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ACCESS_TOKEN }}
           FACEBOOK_PAGE_TOKEN: ${{ secrets.FACEBOOK_PAGE_TOKEN }}
           INSTAGRAM_BUSINESS_ACCOUNT_ID: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}
+          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
           
-      - name: Commit changes
+      - name: Commit generated files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add -A
-          git diff --quiet && git diff --staged --quiet || git commit -m "Daily Shopify content"
+          git diff --quiet && git diff --staged --quiet || git commit -m "Daily marketing: $(date +'%Y-%m-%d')"
           git push
