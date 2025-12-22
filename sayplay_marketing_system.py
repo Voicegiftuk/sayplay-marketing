@@ -770,6 +770,7 @@ class MultiPlatformPublisher:
         image_url = self.upload_to_catbox(image_path)
         
         # Create container
+        print("   📦 Creating Instagram container...")
         container_url = f'https://graph.facebook.com/v18.0/{self.instagram_id}/media'
         container_data = {
             'image_url': image_url,
@@ -782,8 +783,14 @@ class MultiPlatformPublisher:
             raise Exception(f"Instagram container error: {container_response.text}")
         
         container_id = container_response.json()['id']
+        print(f"   ✅ Container created: {container_id}")
+        
+        # WAIT for Instagram to process the image
+        print("   ⏳ Waiting 20 seconds for Instagram to process image...")
+        time.sleep(20)
         
         # Publish
+        print("   🚀 Publishing to Instagram...")
         publish_url = f'https://graph.facebook.com/v18.0/{self.instagram_id}/media_publish'
         publish_data = {
             'creation_id': container_id,
