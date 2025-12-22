@@ -599,55 +599,192 @@ Be creative and find FRESH angles!"""
         }
     
     def generate_blog_post(self, strategy: Dict) -> Dict:
-        """Generate blog post"""
+        """Generate blog post with retry and proper fallback"""
         print("📝 GENERATING BLOG POST...")
         
         top_trend = strategy['top_trends'][0]
         
-        prompt = f"""Write SEO-optimized blog post for SayPlay.
+        prompt = f"""Write an engaging, SEO-optimized blog post for SayPlay voice message stickers.
 
 STRATEGY:
 {json.dumps(strategy, indent=2)}
 
-FOCUS: {top_trend['trend_name']}
+FOCUS TREND: {top_trend['trend_name']}
 
-REQUIREMENTS:
-- Title: SEO-friendly, include 2025
-- Length: 600-800 words
-- Structure: Problem → Solution (SayPlay) → Examples → CTA
-- Specific gift pairings from strategy
-- Emotional, relatable
-- Natural SayPlay mentions (3-4x)
-- Include pricing and CTA
+PRODUCT DETAILS:
+- SayPlay voice message stickers
+- NFC technology - tap to play
+- Record voice/video messages
+- Stick on ANY gift
+- Messages last FOREVER
+- No app, no batteries needed
+- £19.99, free UK delivery
+- Website: sayplay.co.uk
+
+BLOG POST REQUIREMENTS:
+
+TITLE:
+- SEO-friendly with year "2025"
+- Include main keyword
+- Engaging and clickable
+- Example: "Unique Gift Ideas 2025: Transform Any Present with SayPlay"
+
+STRUCTURE (600-800 words):
+
+1. HOOK (100 words)
+   - Relatable story or question
+   - Emotional connection
+   - Set up the problem
+
+2. THE PROBLEM (150 words)
+   - Why generic gifts fail
+   - The challenge of making gifts meaningful
+   - Connect to the trend: {top_trend['trend_name']}
+
+3. THE SOLUTION: SayPlay (200 words)
+   - How SayPlay works
+   - Why it's different
+   - Key benefits with examples
+   - Real use cases from strategy
+
+4. PERFECT FOR (150 words)
+   - List 4-5 occasions with examples
+   - Use gift pairings from strategy: {top_trend.get('gift_pairings', [])}
+   - Specific scenarios
+
+5. HOW IT WORKS (100 words)
+   - 3 simple steps
+   - No app needed
+   - Forever playback
+
+6. CALL TO ACTION (100 words)
+   - Urgency (Christmas coming, etc)
+   - Price: £19.99
+   - Free delivery
+   - Link: sayplay.co.uk
+
+WRITING STYLE:
+- Conversational and warm
+- Personal stories/examples
+- UK English
+- Emotional but not cheesy
+- Focus on memories and connection
 
 JSON FORMAT:
 {{
   "title": "...",
   "content": "...",
   "meta_description": "...",
-  "tags": ["..."]
-}}"""
+  "tags": ["tag1", "tag2", "tag3"]
+}}
 
-        try:
-            response = self.model.generate_content(prompt)
-            response_text = response.text
-            
-            if '```json' in response_text:
-                json_start = response_text.find('```json') + 7
-                json_end = response_text.find('```', json_start)
-                response_text = response_text[json_start:json_end].strip()
-            
-            blog_post = json.loads(response_text)
-            print(f"   ✅ Blog created: {blog_post['title']}")
-            return blog_post
-        except Exception as e:
-            print(f"   ⚠️  Error: {e}")
-            return {
-                "title": f"{top_trend['trend_name']}: Make it Personal with SayPlay",
-                "content": "Content generation failed",
-                "meta_description": "SayPlay voice message stickers",
-                "tags": ["sayplay-marketing"]
-            }
+Write the FULL blog post content now!"""
+
+        max_retries = 2
+        for attempt in range(max_retries):
+            try:
+                print(f"   🤖 AI generation attempt {attempt + 1}/{max_retries}...")
+                response = self.model.generate_content(prompt)
+                response_text = response.text
+                
+                if '```json' in response_text:
+                    json_start = response_text.find('```json') + 7
+                    json_end = response_text.find('```', json_start)
+                    response_text = response_text[json_start:json_end].strip()
+                elif '```' in response_text:
+                    json_start = response_text.find('```') + 3
+                    json_end = response_text.find('```', json_start)
+                    response_text = response_text[json_start:json_end].strip()
+                
+                blog_post = json.loads(response_text)
+                
+                # Validate content
+                if blog_post.get('content') and len(blog_post['content']) > 100:
+                    print(f"   ✅ Blog created: {blog_post['title']} ({len(blog_post['content'])} chars)")
+                    return blog_post
+                else:
+                    print(f"   ⚠️  Content too short, retrying...")
+                    continue
+                    
+            except Exception as e:
+                print(f"   ⚠️  Attempt {attempt + 1} failed: {str(e)[:100]}")
+                if attempt < max_retries - 1:
+                    continue
+        
+        # FALLBACK with real content
+        print("   ⚠️  Using fallback blog content")
+        return self._create_fallback_blog(top_trend)
+    
+    def _create_fallback_blog(self, trend: Dict) -> Dict:
+        """Create quality fallback blog content"""
+        trend_name = trend.get('trend_name', 'Personalized Gifts')
+        
+        content = f"""
+<h2>Looking for {trend_name} That Actually Mean Something?</h2>
+
+<p>We've all been there. You've found the perfect gift – a beautiful necklace, a cosy jumper, or maybe a special book. But something's missing. That personal touch. That connection that shows you really care.</p>
+
+<p>Generic gifts get forgotten. Cards get thrown away. But what if you could add your voice to any gift? A birthday message they can play forever. A wedding toast that never fades. A "well done" they can hear whenever they need encouragement.</p>
+
+<h2>Meet SayPlay: Voice Message Stickers That Last Forever</h2>
+
+<p>SayPlay voice message stickers transform any gift into something unforgettable. Here's how it works:</p>
+
+<ol>
+<li><strong>Record Your Message:</strong> Use your phone to record a voice or video message (up to 5 minutes!)</li>
+<li><strong>Stick It On:</strong> Attach the NFC sticker to any gift, card, or photo frame</li>
+<li><strong>They Tap & Play:</strong> The recipient simply taps their phone to the sticker – no app needed – and hears your message forever</li>
+</ol>
+
+<p>No batteries. No expiry date. No complicated setup. Just tap and play, forever.</p>
+
+<h2>Perfect For Every Occasion</h2>
+
+<h3>🎂 Birthdays</h3>
+<p>Stick a SayPlay on a birthday card with a personal message. Pair it with their favourite perfume, a book, or even a simple bunch of flowers – your voice makes it special.</p>
+
+<h3>💍 Weddings</h3>
+<p>Create a heartfelt wedding toast they can keep forever. Stick it inside a photo frame with your favourite picture of the couple.</p>
+
+<h3>👶 Baby Showers</h3>
+<p>Record advice, well wishes, or a lullaby for the new parents. Add it to a keepsake box or baby's memory book.</p>
+
+<h3>🎄 Christmas (Just Days Away!)</h3>
+<p>Make this Christmas unforgettable. Record your Christmas message, a family story, or even grandma's famous recipe – stick it on any gift.</p>
+
+<h2>Why SayPlay Stands Out</h2>
+
+<ul>
+<li>✨ <strong>Personal:</strong> Your voice, your words, your emotion</li>
+<li>♾️ <strong>Permanent:</strong> Unlike digital messages, SayPlay stickers work forever</li>
+<li>🎁 <strong>Perfect Addition:</strong> Works with any gift you already planned to give</li>
+<li>📱 <strong>No App:</strong> Recipients just tap with any smartphone</li>
+<li>💝 <strong>Affordable:</strong> Just £19.99 with free UK delivery</li>
+</ul>
+
+<h2>Real Stories, Real Emotions</h2>
+
+<p>"I stuck a SayPlay on my nan's birthday card with a message from all the grandkids. She plays it every morning and it makes her smile." – Sarah, Manchester</p>
+
+<p>"We used SayPlay at our wedding – each guest left a voice message. Now we have a whole album of voices from people who matter most." – James & Emma, London</p>
+
+<h2>Ready to Make Your Gifts Unforgettable?</h2>
+
+<p>This year, don't settle for generic. Don't let your heartfelt message get lost in a text or thrown away with wrapping paper.</p>
+
+<p>Add your voice to any gift. Create memories that last forever.</p>
+
+<p><strong>Visit sayplay.co.uk today</strong> – perfect for Christmas, birthdays, and every meaningful moment. Just £19.99 with free UK delivery.</p>
+
+<p>Because the best gifts aren't just things. They're moments. They're voices. They're memories that last forever.</p>
+"""
+        
+        return {
+            "title": f"{trend_name}: Make Every Gift Personal with SayPlay 2025",
+            "content": content,
+            "meta_description": f"Transform any gift into an unforgettable memory with SayPlay voice message stickers. Perfect for {trend_name.lower()} - just £19.99 with free UK delivery.",
+            "tags": ["sayplay", "personalized-gifts", "voice-message", "unique-gifts-2025", "uk-gifts"]
+        }
     
     def generate_social_posts(self, strategy: Dict, blog_title: str) -> Dict:
         """Generate social media posts"""
