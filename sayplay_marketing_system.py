@@ -409,40 +409,55 @@ class IntelligentImageGenerator:
         return temp_file
     
     def _create_vibrant_design(self, theme: str, colors: Dict, trend_data: Dict) -> str:
-        """Vibrant colorful design"""
+        """Vibrant colorful design - IMPROVED for readability"""
         img = Image.new('RGB', (self.width, self.height))
         draw = ImageDraw.Draw(img)
         
-        # Color blocks
-        block_colors = [colors['primary'], colors['accent'], colors['secondary'], colors['primary'], colors['accent']]
-        block_height = self.height // len(block_colors)
+        # Use gradient instead of blocks for better look
+        primary_rgb = tuple(int(colors['primary'][i:i+2], 16) for i in (1, 3, 5))
+        accent_rgb = tuple(int(colors['accent'][i:i+2], 16) for i in (1, 3, 5))
         
-        for i, color in enumerate(block_colors):
-            y_start = i * block_height
-            draw.rectangle([(0, y_start), (self.width, y_start + block_height)], fill=color)
+        for y in range(self.height):
+            ratio = y / self.height
+            r = int(primary_rgb[0] + (accent_rgb[0] - primary_rgb[0]) * ratio)
+            g = int(primary_rgb[1] + (accent_rgb[1] - primary_rgb[1]) * ratio)
+            b = int(primary_rgb[2] + (accent_rgb[2] - primary_rgb[2]) * ratio)
+            draw.rectangle([(0, y), (self.width, y+1)], fill=(r, g, b))
         
-        # Semi-transparent overlay
-        overlay = Image.new('RGBA', (self.width, self.height), (255, 255, 255, 180))
+        # Dark overlay for better text contrast
+        overlay = Image.new('RGBA', (self.width, self.height), (0, 0, 0, 100))
         img = Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
         draw = ImageDraw.Draw(img)
         
         try:
-            title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 85)
-            body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
+            brand_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 80)
+            title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 70)
+            body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 45)
         except:
-            title_font = body_font = ImageFont.load_default()
+            brand_font = title_font = body_font = ImageFont.load_default()
         
-        # Bold text with outline
-        texts = [
-            ("🎤 SAYPLAY 🎁", title_font, 150),
-            (theme.split()[0] if theme else "Voice", body_font, 300),
-            (theme.split()[1] if len(theme.split()) > 1 else "Gifts", body_font, 380),
-            ("FOREVER", title_font, 520),
-            ("sayplay.co.uk", body_font, 880)
+        # Content with better readability
+        self._draw_centered_text(draw, "SAYPLAY", brand_font, 100, '#FFFFFF', shadow=True)
+        self._draw_centered_text(draw, "Voice Message Stickers", body_font, 220, '#FFFFFF')
+        
+        # Theme
+        theme_short = ' '.join(theme.split()[:3])
+        self._draw_centered_text(draw, theme_short, title_font, 400, '#FFFFFF', shadow=True)
+        
+        # Benefits
+        benefits = [
+            "🎤 Record Your Message",
+            "🎁 Stick on Any Gift",
+            "♾️ They Play Forever"
         ]
+        y_pos = 550
+        for benefit in benefits:
+            self._draw_centered_text(draw, benefit, body_font, y_pos, '#FFFFFF')
+            y_pos += 70
         
-        for text, font, y in texts:
-            self._draw_outlined_text(draw, text, font, y, '#FFFFFF', '#000000')
+        # CTA
+        draw.rectangle([(100, 900), (self.width-100, 980)], fill='#FFFFFF')
+        self._draw_centered_text(draw, "sayplay.co.uk", brand_font, 910, colors['primary'])
         
         temp_file = f'/tmp/instagram_{int(time.time())}.jpg'
         img.save(temp_file, 'JPEG', quality=95)
@@ -640,16 +655,46 @@ JSON FORMAT:
         
         style = strategy.get('content_style', 'emotional')
         
-        prompt = f"""Create social media content for SayPlay.
+        prompt = f"""Create engaging social media content for SayPlay voice message stickers.
 
 STRATEGY: {json.dumps(strategy, indent=2)}
 BLOG TITLE: {blog_title}
-STYLE TO USE: {style}
+STYLE: {style}
 
-CREATE:
-1. INSTAGRAM (300-400 words): {style} style, 12-15 hashtags
-2. FACEBOOK (200-300 words): Conversational, 5-8 hashtags
-3. TWITTER/X (280 chars max): Punchy, 3-5 hashtags, clear CTA
+PRODUCT REMINDER:
+- SayPlay = NFC voice message stickers
+- Record voice/video messages
+- Stick on ANY gift
+- They last FOREVER
+- £19.99, free UK delivery
+- sayplay.co.uk
+
+CREATE HIGHLY ENGAGING POSTS:
+
+1. INSTAGRAM (400-600 words):
+   - Start with HOOK (emoji + question or statement)
+   - Explain the problem/emotion (2-3 lines)
+   - Introduce SayPlay as solution (2-3 lines)
+   - 3-5 bullet points with emoji (Perfect for: ...)
+   - Call to action
+   - 12-15 relevant hashtags
+   - Use style: {style}
+   - Make it conversational and engaging!
+
+2. FACEBOOK (250-350 words):
+   - Conversational tone
+   - Tell a mini story
+   - Include benefits
+   - Clear CTA
+   - 5-8 hashtags
+
+3. TWITTER/X (250-280 chars):
+   - Punchy hook
+   - Key benefit
+   - CTA + URL
+   - 3-5 hashtags
+
+IMPORTANT: Make Instagram caption LONG and ENGAGING - minimum 400 words!
 
 JSON FORMAT:
 {{
@@ -668,14 +713,50 @@ JSON FORMAT:
                 response_text = response_text[json_start:json_end].strip()
             
             posts = json.loads(response_text)
-            print("   ✅ Social posts created!")
+            
+            # Validate Instagram caption length
+            ig_caption = posts.get('instagram', {}).get('caption', '')
+            if len(ig_caption) < 200:
+                print(f"   ⚠️  Instagram caption too short ({len(ig_caption)} chars), regenerating...")
+                # Add default engaging caption
+                posts['instagram']['caption'] = f"""✨ Looking for the PERFECT gift that shows you really care? ✨
+
+Generic gifts get forgotten. But SayPlay voice message stickers? They create memories that last FOREVER. ❤️
+
+🎤 Record your voice/video
+📦 Stick it on ANY gift
+♾️ They tap & play - forever
+
+Perfect for:
+- Birthdays 🎂
+- Weddings 💍
+- Baby showers 👶
+- Christmas (4 days!) 🎄
+
+Just £19.99 at sayplay.co.uk
+
+Tag someone who needs to see this! 👇
+
+#SayPlay #PersonalizedGifts #VoiceMessage #GiftIdeas #UniqueGifts #ThoughtfulGifts #Christmas2025 #BirthdayGift #WeddingGift #VoiceStickers #MemorableMoments #GiftingMadeEasy"""
+            
+            print(f"   ✅ Social posts created! (Instagram: {len(posts['instagram']['caption'])} chars)")
             return posts
         except Exception as e:
             print(f"   ⚠️  Error: {e}")
             return {
-                "instagram": {"caption": "SayPlay voice stickers...", "style": style},
-                "facebook": {"caption": "Make gifts personal..."},
-                "twitter": {"tweet": "Transform any gift with SayPlay 🎁 sayplay.co.uk"}
+                "instagram": {"caption": """✨ Transform ANY gift into something unforgettable with SayPlay! ✨
+
+Record your voice, stick it on a gift, and they'll treasure it forever. No app needed!
+
+🎁 Perfect for birthdays, weddings, Christmas
+💝 Just £19.99 with free UK delivery
+♾️ Memories that last forever
+
+Shop now: sayplay.co.uk
+
+#SayPlay #PersonalizedGifts #VoiceMessage #GiftIdeas #UniqueGifts #Christmas2025 #BirthdayGift #ThoughtfulPresents""", "style": style},
+                "facebook": {"caption": "Make gifts personal with SayPlay voice stickers! Record your message, stick it on any gift, and create memories that last forever. £19.99 at sayplay.co.uk #SayPlay #PersonalizedGifts"},
+                "twitter": {"tweet": "Transform any gift with SayPlay voice stickers! Record your message, they play it forever. 🎁 sayplay.co.uk #SayPlay #PersonalizedGifts #UniqueGifts"}
             }
 
 
@@ -767,6 +848,18 @@ class MultiPlatformPublisher:
         """Publish to Instagram Business Account"""
         print("📸 PUBLISHING TO INSTAGRAM...")
         
+        # Validate and truncate caption if needed
+        if not caption or len(caption.strip()) == 0:
+            caption = "Check out our latest personalized gift ideas! 🎁 #SayPlay #PersonalizedGifts"
+            print("   ⚠️  Empty caption, using fallback")
+        
+        # Instagram caption limit is 2200 characters
+        if len(caption) > 2200:
+            caption = caption[:2180] + "... 🎁"
+            print(f"   ⚠️  Caption truncated to {len(caption)} chars")
+        
+        print(f"   📝 Caption length: {len(caption)} chars")
+        
         image_url = self.upload_to_catbox(image_path)
         
         # Create container
@@ -777,6 +870,9 @@ class MultiPlatformPublisher:
             'caption': caption,
             'access_token': self.page_token
         }
+        
+        print(f"   🔗 Image URL: {image_url}")
+        print(f"   📝 Caption preview: {caption[:100]}...")
         
         container_response = requests.post(container_url, data=container_data)
         if container_response.status_code != 200:
@@ -931,13 +1027,27 @@ def main():
         blog_post = content_creator.generate_blog_post(strategy)
         social_posts = content_creator.generate_social_posts(strategy, blog_post['title'])
         
+        # LOG GENERATED CONTENT
+        print("\n" + "=" * 80)
+        print("GENERATED CONTENT PREVIEW:")
+        print("=" * 80)
+        print(f"📝 Blog: {blog_post['title']}")
+        print(f"📸 Instagram caption ({len(social_posts['instagram']['caption'])} chars):")
+        print(f"   {social_posts['instagram']['caption'][:150]}...")
+        print(f"📘 Facebook caption ({len(social_posts['facebook']['caption'])} chars):")
+        print(f"   {social_posts['facebook']['caption'][:100]}...")
+        print(f"🐦 Twitter tweet ({len(social_posts['twitter']['tweet'])} chars):")
+        print(f"   {social_posts['twitter']['tweet']}")
+        print("=" * 80)
+        
         # STEP 4: Image Generation
         print("\n" + "=" * 80)
         print("STEP 4: INTELLIGENT IMAGE GENERATION")
         print("=" * 80)
         
         top_trend = strategy['top_trends'][0]['trend_name']
-        image_style = random.choice(['gradient', 'minimal', 'vibrant'])
+        # Prefer gradient (best looking) over vibrant (too busy)
+        image_style = random.choice(['gradient', 'gradient', 'minimal'])  # 2/3 chance gradient
         print(f"   🎨 Creating {image_style} design for: {top_trend}")
         
         image_path = image_gen.create_image_from_theme(top_trend, research_data, image_style)
