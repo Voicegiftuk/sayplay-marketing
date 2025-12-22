@@ -6,6 +6,7 @@ SayPlay FINAL Complete Marketing System
 - AI analysis and content generation
 - Intelligent image generation based on research
 - Multi-platform: Shopify + Instagram + Facebook PAGE + Twitter/X
+- Image hosting: Catbox.moe (no API key needed!)
 """
 
 import os
@@ -36,7 +37,6 @@ class Config:
     TWITTER_API_SECRET = os.getenv('TWITTER_API_SECRET')
     TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
     TWITTER_ACCESS_SECRET = os.getenv('TWITTER_ACCESS_SECRET')
-    IMGUR_CLIENT_ID = 'e3b7c49c78c3e59'
     
     # History tracking
     HISTORY_FILE = 'content_history.json'
@@ -692,7 +692,6 @@ class MultiPlatformPublisher:
         self.page_token = Config.FACEBOOK_PAGE_TOKEN
         self.instagram_id = Config.INSTAGRAM_ACCOUNT_ID
         self.facebook_page_id = Config.FACEBOOK_PAGE_ID
-        self.imgur_client_id = Config.IMGUR_CLIENT_ID
         self.image_gen = IntelligentImageGenerator()
         
         # Twitter/X OAuth1
@@ -701,17 +700,31 @@ class MultiPlatformPublisher:
         self.twitter_access_token = Config.TWITTER_ACCESS_TOKEN
         self.twitter_access_secret = Config.TWITTER_ACCESS_SECRET
     
-    def upload_to_imgur(self, image_path: str) -> str:
-        """Upload image to Imgur"""
-        with open(image_path, 'rb') as img:
-            response = requests.post(
-                'https://api.imgur.com/3/image',
-                headers={'Authorization': f'Client-ID {self.imgur_client_id}'},
-                files={'image': img}
-            )
-        if response.status_code == 200:
-            return response.json()['data']['link']
-        raise Exception("Imgur upload failed")
+    def upload_to_catbox(self, image_path: str) -> str:
+        """Upload image to Catbox.moe (no API key needed!)"""
+        print("   ☁️  Uploading to Catbox.moe...")
+        try:
+            with open(image_path, 'rb') as img:
+                response = requests.post(
+                    'https://catbox.moe/user/api.php',
+                    data={'reqtype': 'fileupload'},
+                    files={'fileToUpload': img},
+                    timeout=30
+                )
+            
+            if response.status_code == 200:
+                # Catbox returns direct URL as text
+                url = response.text.strip()
+                if url.startswith('http'):
+                    print(f"   ✅ Image uploaded: {url}")
+                    return url
+                else:
+                    raise Exception(f"Catbox upload failed: {url}")
+            else:
+                raise Exception(f"Catbox upload failed: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"   ⚠️  Catbox upload error: {e}")
+            raise
     
     def publish_to_shopify(self, blog_post: Dict) -> str:
         """Publish to Shopify blog"""
@@ -754,7 +767,7 @@ class MultiPlatformPublisher:
         """Publish to Instagram Business Account"""
         print("📸 PUBLISHING TO INSTAGRAM...")
         
-        image_url = self.upload_to_imgur(image_path)
+        image_url = self.upload_to_catbox(image_path)
         
         # Create container
         container_url = f'https://graph.facebook.com/v18.0/{self.instagram_id}/media'
@@ -793,7 +806,7 @@ class MultiPlatformPublisher:
             print("   ⚠️  Facebook Page ID not configured")
             return None
         
-        image_url = self.upload_to_imgur(image_path)
+        image_url = self.upload_to_catbox(image_path)
         
         # Post to PAGE using PAGE ID
         post_url = f'https://graph.facebook.com/v18.0/{self.facebook_page_id}/photos'
