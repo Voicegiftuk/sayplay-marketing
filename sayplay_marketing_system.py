@@ -954,8 +954,12 @@ def main():
         # Instagram
         ig_post_id = publisher.publish_to_instagram(social_posts['instagram']['caption'], image_path)
         
-        # Facebook PAGE
-        fb_post_id = publisher.publish_to_facebook_page(social_posts['facebook']['caption'], image_path)
+        # Facebook PAGE (with error handling)
+        try:
+            fb_post_id = publisher.publish_to_facebook_page(social_posts['facebook']['caption'], image_path)
+        except Exception as e:
+            print(f"   ⚠️  Facebook Page posting skipped: {str(e)[:100]}")
+            fb_post_id = None
         
         # Twitter/X
         twitter_id = publisher.publish_to_twitter(social_posts['twitter']['tweet'], image_path)
