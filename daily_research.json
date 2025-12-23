@@ -1,5 +1,5 @@
 {
-  "date": "2025-12-22",
+  "date": "2025-12-23",
   "sources": {
     "google_trends": [
       "Christmas gifts",
@@ -10,11 +10,10 @@
     ],
     "reddit": [],
     "amazon_categories": [
-      "Personalized items",
-      "Kitchen accessories",
-      "Toys and games",
       "Craft supplies",
-      "Tech gadgets"
+      "Kitchen accessories",
+      "Books",
+      "Toys and games"
     ],
     "pinterest": [
       "DIY gifts",
