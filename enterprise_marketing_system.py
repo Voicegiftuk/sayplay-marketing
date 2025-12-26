@@ -10,7 +10,7 @@ Multi-AI orchestration system optimized for:
 - Maximum reach and visibility
 
 Author: Built for SayPlay
-Version: 1.0 Enterprise
+Version: 1.0 Enterprise (FIXED - Stable Gemini Model)
 Budget: $0/month
 """
 
@@ -107,7 +107,7 @@ SAYPLAY_PRODUCT = {
 class FreeAIOrchestrator:
     """
     Multi-AI system using only FREE services:
-    - Gemini 2.0 Flash (2M tokens/day FREE)
+    - Gemini 1.5 Flash (stable, 15 RPM FREE)
     - DuckDuckGo search (unlimited FREE)
     - Pollinations.ai images (unlimited FREE)
     """
@@ -118,27 +118,39 @@ class FreeAIOrchestrator:
         if not self.gemini_key:
             raise ValueError("GEMINI_API_KEY not found in environment")
         
-        # Initialize Gemini
+        # Initialize Gemini with STABLE model (not experimental!)
         genai.configure(api_key=self.gemini_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        # ✅ FIXED: Use gemini-1.5-flash (stable, FREE tier)
+        # ❌ OLD: gemini-2.0-flash-exp (experimental, requires billing)
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
         
         print("✅ FREE AI Orchestrator initialized")
-        print(f"   🤖 Gemini 2.0 Flash: READY")
-        print(f"   🔍 DuckDuckGo Search: READY")
-        print(f"   🎨 Pollinations.ai: READY")
+        print(f"   🤖 Gemini 1.5 Flash: READY (stable FREE tier - 15 RPM)")
+        print(f"   🔍 DuckDuckGo Search: READY (unlimited)")
+        print(f"   🎨 Pollinations.ai: READY (unlimited)")
     
     def generate_content(self, prompt: str, max_retries: int = 2) -> str:
-        """Generate content with Gemini (FREE 2M tokens/day)"""
+        """Generate content with Gemini (FREE 15 RPM, 1M TPM)"""
         for attempt in range(max_retries):
             try:
                 response = self.model.generate_content(prompt)
                 return response.text
             except Exception as e:
-                print(f"   ⚠️ Gemini attempt {attempt + 1} failed: {str(e)[:100]}")
+                error_msg = str(e)
+                print(f"   ⚠️ Gemini attempt {attempt + 1} failed: {error_msg[:100]}")
+                
+                # Better error messages
+                if "quota" in error_msg.lower():
+                    print(f"   💡 TIP: Wait a moment for quota reset (rate: 15 requests/min)")
+                elif "429" in error_msg:
+                    print(f"   💡 TIP: Too many requests - system will retry in 2 seconds")
+                
                 if attempt < max_retries - 1:
-                    time.sleep(2)
+                    time.sleep(2)  # Wait before retry
                     continue
-                raise
+                else:
+                    print(f"   ⚠️ All attempts failed, using fallback content")
+                    raise
         return ""
     
     def search_web(self, query: str, max_results: int = 10) -> List[Dict]:
@@ -411,6 +423,7 @@ Tags: [tag1, tag2, tag3, tag4, tag5]
                     
                     # Add schemas
                     blog['schemas'] = self._generate_schemas(blog, theme)
+                    blog['theme'] = theme  # Save theme for history
                     
                     return blog
                 else:
@@ -420,6 +433,7 @@ Tags: [tag1, tag2, tag3, tag4, tag5]
             except Exception as e:
                 print(f"   ⚠️ Attempt {attempt + 1} failed: {str(e)[:100]}")
                 if attempt < max_retries - 1:
+                    time.sleep(3)  # Wait a bit longer before retry
                     continue
         
         # Fallback content
@@ -747,7 +761,8 @@ Are you a florist, gift shop, or event planner?
             'meta_description': f"Discover {theme.lower()} with SayPlay voice message stickers. From £8.99, no app needed. Add personal voice messages to any gift!",
             'tags': ['sayplay', 'voice-message-gifts', 'personalized-gifts', 'uk-gifts', 'gift-ideas-2025'],
             'content': content,
-            'schemas': self._generate_schemas({'title': title, 'meta_description': ''}, theme)
+            'schemas': self._generate_schemas({'title': title, 'meta_description': ''}, theme),
+            'theme': theme
         }
 
 # ============================================================================
@@ -820,6 +835,7 @@ class MultiPlatformPublisher:
             return None
         
         try:
+            # TODO: Replace YOUR_BLOG_ID with actual blog ID from Shopify
             url = f"https://{self.shopify_shop}/admin/api/2024-01/blogs/YOUR_BLOG_ID/articles.json"
             
             # Add schema markup to content
@@ -1028,6 +1044,7 @@ def main():
     print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Product: {SAYPLAY_PRODUCT['name']}")
     print(f"Budget: $0/month")
+    print(f"Version: 1.0 (FIXED - Stable Gemini 1.5 Flash)")
     print("=" * 80)
     
     try:
