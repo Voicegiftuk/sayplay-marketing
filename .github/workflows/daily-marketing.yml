@@ -1,65 +1,81 @@
-name: Enterprise AI Marketing System
+name: SayPlay Complete Marketing Automation
 
 on:
   schedule:
-    # Run daily at 9:00 UTC (10:00 UK time)
+    # Runs daily at 9:00 UTC (10:00 GMT, 11:00 BST)
     - cron: '0 9 * * *'
   
   # Allow manual trigger
   workflow_dispatch:
 
 jobs:
-  run-marketing-campaign:
+  marketing-campaign:
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       
-      - name: Setup Python 3.11
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.10'
+          cache: 'pip'
       
-      - name: Install FREE dependencies
+      - name: Install dependencies
         run: |
-          pip install --break-system-packages -r requirements.txt
-          echo "✅ All FREE dependencies installed"
+          pip install --upgrade pip
+          pip install google-generativeai
+          pip install pytrends
+          pip install praw
+          pip install requests
+          pip install pillow
       
-      - name: Run Enterprise Marketing System
+      - name: Run Complete Marketing System
         env:
-          # AI & Content Generation (FREE!)
+          # AI
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           
-          # Publishing Platforms
+          # Shopify Blog
           SHOPIFY_SHOP: ${{ secrets.SHOPIFY_SHOP }}
           SHOPIFY_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ACCESS_TOKEN }}
-          FACEBOOK_PAGE_TOKEN: ${{ secrets.FACEBOOK_PAGE_TOKEN }}
-          INSTAGRAM_BUSINESS_ACCOUNT_ID: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}
+          SHOPIFY_BLOG_ID: ${{ secrets.SHOPIFY_BLOG_ID }}
           
-          # Optional (can be empty)
-          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
-          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
-          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
-          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+          # Facebook Page
+          FACEBOOK_PAGE_TOKEN: ${{ secrets.FACEBOOK_PAGE_TOKEN }}
+          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
+          
+          # Instagram Business
+          INSTAGRAM_BUSINESS_ID: ${{ secrets.INSTAGRAM_BUSINESS_ID }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          
+          # Reddit (optional)
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
         run: |
-          python enterprise_marketing_system.py
+          python sayplay_complete_system.py
       
-      - name: Commit generated files
+      - name: Commit results
         run: |
           git config --global user.name 'SayPlay Marketing Bot'
-          git config --global user.email 'bot@sayplay.co.uk'
-          git add content_history.json daily_research.json generated_blog.json || true
-          git commit -m "🤖 Daily marketing campaign [$(date +'%Y-%m-%d')]" || echo "No changes to commit"
-          git push || echo "Push failed or no changes"
+          git config --global user.email 'marketing@sayplay.co.uk'
+          git add -A
+          git diff --quiet && git diff --staged --quiet || git commit -m "🤖 Daily marketing campaign [$(date +'%Y-%m-%d %H:%M UTC')]"
+          git push
       
       - name: Upload artifacts
-        if: always()
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: marketing-campaign-logs
+          name: marketing-campaign-${{ github.run_number }}
           path: |
+            research_data.json
+            generated_content.json
             content_history.json
-            daily_research.json
-            generated_blog.json
+            sayplay_*.jpg
           retention-days: 30
+      
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::warning::Marketing campaign failed! Check logs for details."
