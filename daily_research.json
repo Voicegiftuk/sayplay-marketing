@@ -1,25 +1,7 @@
 {
-  "date": "2025-12-23",
-  "sources": {
-    "google_trends": [
-      "Christmas gifts",
-      "Last minute Christmas",
-      "Stocking stuffers",
-      "Secret Santa",
-      "Christmas personalized"
-    ],
-    "reddit": [],
-    "amazon_categories": [
-      "Beauty products",
-      "Toys and games",
-      "Kitchen accessories"
-    ],
-    "pinterest": [
-      "DIY gifts",
-      "Gift wrapping",
-      "Handmade gifts",
-      "Gift baskets",
-      "Experience gifts"
-    ]
+  "web_search": [],
+  "blog_topics": [],
+  "analysis": {
+    "themes": []
   }
 }
