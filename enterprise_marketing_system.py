@@ -245,21 +245,30 @@ class UltimateAIOrchestrator:
         return ""
     
     def search_web(self, query: str, max_results: int = 10) -> List[Dict]:
-        """FREE unlimited web search with DuckDuckGo"""
-        try:
-            ddgs = DDGS()
-            results = list(ddgs.text(query, max_results=max_results))
-            return [
-                {
-                    'title': r['title'],
-                    'snippet': r['body'],
-                    'url': r['href']
-                }
-                for r in results
-            ]
-        except Exception as e:
-            print(f"   ⚠️ DuckDuckGo search failed: {e}")
-            return []
+        """FREE unlimited web search with DuckDuckGo (with rate limit handling)"""
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                ddgs = DDGS()
+                results = list(ddgs.text(query, max_results=max_results))
+                return [
+                    {
+                        'title': r['title'],
+                        'snippet': r['body'],
+                        'url': r['href']
+                    }
+                    for r in results
+                ]
+            except Exception as e:
+                error_msg = str(e)
+                if "Ratelimit" in error_msg and attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 3  # 3s, 6s, 9s
+                    print(f"   ⏳ DuckDuckGo rate limit, waiting {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"   ⚠️ DuckDuckGo search failed: {error_msg[:60]}")
+                    return []
+        return []
     
     def generate_image(self, prompt: str) -> str:
         """FREE unlimited image generation with Pollinations.ai"""
@@ -361,15 +370,18 @@ class FreeResearchEngine:
         for blog_name, feed_url in self.rss_feeds.items():
             try:
                 feed = feedparser.parse(feed_url)
-                for entry in feed.entries[:3]:
-                    trends['blog_topics'].append({
-                        'source': blog_name,
-                        'title': entry.title,
-                        'link': entry.link
-                    })
-                print(f"   ✅ {blog_name}: {len(feed.entries[:3])} posts")
+                if feed.entries:
+                    for entry in feed.entries[:3]:
+                        trends['blog_topics'].append({
+                            'source': blog_name,
+                            'title': entry.title,
+                            'link': entry.link
+                        })
+                    print(f"   ✅ {blog_name}: {len(feed.entries[:3])} posts")
+                else:
+                    print(f"   ⚠️ {blog_name}: no posts found")
             except Exception as e:
-                print(f"   ⚠️ {blog_name} RSS failed")
+                print(f"   ⚠️ {blog_name}: RSS failed")
         
         # AI Analysis
         print("   🤖 AI analyzing trends...")
@@ -615,8 +627,25 @@ class ContentHistory:
         if os.path.exists(self.history_file):
             try:
                 with open(self.history_file, 'r') as f:
-                    return json.load(f)
-            except:
+                    data = json.load(f)
+                
+                # Migrate old entries: add 'theme' if missing
+                migrated = []
+                for entry in data:
+                    if 'theme' not in entry:
+                        # Old format - add empty theme
+                        entry['theme'] = entry.get('title', '').split('|')[0].strip()
+                    migrated.append(entry)
+                
+                # Save migrated data back
+                if len(migrated) != len([e for e in data if 'theme' in e]):
+                    with open(self.history_file, 'w') as f:
+                        json.dump(migrated, f, indent=2)
+                    print("   ℹ️ Migrated old history file format")
+                
+                return migrated
+            except Exception as e:
+                print(f"   ⚠️ Could not load history: {e}")
                 return []
         return []
     
@@ -641,8 +670,8 @@ class ContentHistory:
     def get_recent_themes(self, days: int = 7) -> List[str]:
         cutoff = datetime.now() - timedelta(days=days)
         return [
-            h['theme'] for h in self.history
-            if datetime.fromisoformat(h['date']) > cutoff
+            h.get('theme', '') for h in self.history  # ✅ Use .get() to handle missing keys
+            if datetime.fromisoformat(h['date']) > cutoff and h.get('theme')
         ]
 
 
