@@ -1,1247 +1,1095 @@
 #!/usr/bin/env python3
 """
-SayPlay FINAL Complete Marketing System
-- Daily trend research from 5+ sources
-- Anti-repetition logic (compares with last 7 days)
-- AI analysis and content generation
-- Intelligent image generation based on research
-- Multi-platform: Shopify + Instagram + Facebook PAGE + Twitter/X
-- Image hosting: Catbox.moe (no API key needed!)
+ENTERPRISE AI MARKETING SYSTEM - 100% FREE!
+============================================
+
+Multi-AI orchestration system optimized for:
+- Google SEO (traditional search)
+- AI Search (ChatGPT, Claude, Perplexity, Gemini)
+- Zero monthly costs
+- Maximum reach and visibility
+
+Author: Built for SayPlay
+Version: 1.0 Enterprise
+Budget: $0/month
 """
 
 import os
+import sys
 import json
 import time
 import random
-import hashlib
-from datetime import datetime, timedelta
-from typing import List, Dict, Any
 import requests
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+from urllib.parse import quote
+import re
+
+# AI & Research Libraries
 import google.generativeai as genai
+from duckduckgo_search import DDGS
+import feedparser
+from bs4 import BeautifulSoup
+from PIL import Image, ImageDraw, ImageFont
+import io
 
-# =============================================================================
-# CONFIGURATION
-# =============================================================================
+# ============================================================================
+# PRODUCT INFORMATION - SAYPLAY
+# ============================================================================
 
-class Config:
-    """System configuration"""
-    # API Keys
-    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-    SHOPIFY_SHOP = os.getenv('SHOPIFY_SHOP')
-    SHOPIFY_TOKEN = os.getenv('SHOPIFY_ACCESS_TOKEN')
-    FACEBOOK_PAGE_TOKEN = os.getenv('FACEBOOK_PAGE_TOKEN')
-    INSTAGRAM_ACCOUNT_ID = os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID')
-    FACEBOOK_PAGE_ID = os.getenv('FACEBOOK_PAGE_ID')
-    TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
-    TWITTER_API_SECRET = os.getenv('TWITTER_API_SECRET')
-    TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
-    TWITTER_ACCESS_SECRET = os.getenv('TWITTER_ACCESS_SECRET')
+SAYPLAY_PRODUCT = {
+    'name': 'SayPlay Voice Message Sticker',
+    'tagline': 'Just tap, no app!',
+    'description': 'Magic tap-to-play stickers that add personal voice or video messages to any gift',
     
-    # History tracking
-    HISTORY_FILE = 'content_history.json'
-    MAX_HISTORY_DAYS = 7
+    'how_it_works': [
+        'Tap phone to sticker - recording system opens automatically',
+        'Record up to 60 seconds of audio OR 30 seconds of video',
+        'Attach sticker to gift, card, or invitation',
+        'Recipient taps phone to play - no app needed!'
+    ],
+    
+    'key_features': [
+        'No app required - just tap!',
+        'No QR codes - clean, elegant design',
+        'Works with any smartphone (iPhone & Android)',
+        '60 seconds audio OR 30 seconds video recording',
+        '12 months cloud storage',
+        'Download message to keep forever',
+        'Unlimited playbacks',
+        'Share on social media',
+        'Priority support (3+ packs)'
+    ],
+    
+    'pricing': {
+        'single': {
+            'price': 8.99,
+            'quantity': 1,
+            'features': ['1 NFC Sticker', '60s Audio', '30s Video', '12 Months Storage', 'Unlimited Playbacks', 'Social Sharing']
+        },
+        'popular': {
+            'price': 24.99,
+            'original_price': 26.97,
+            'quantity': 3,
+            'save_percent': 8,
+            'price_per': 8.33,
+            'features': ['3 NFC Stickers', '60s Audio', '30s Video', '12 Months Storage', 'Unlimited Playbacks', 'Social Sharing', 'Priority Support'],
+            'badge': 'Popular Pack'
+        },
+        'best_value': {
+            'price': 49.99,
+            'original_price': 53.94,
+            'quantity': 6,
+            'save_percent': 17,
+            'price_per': 8.33,
+            'bonus': '5+1 FREE!',
+            'features': ['6 NFC Stickers (5+1 FREE!)', '60s Audio', '30s Video', '12 Months Storage', 'Unlimited Playbacks', 'Social Sharing', 'Priority Support'],
+            'badge': 'Best Value'
+        }
+    },
+    
+    'use_cases': {
+        'gifts': ['Birthday presents', 'Christmas gifts', 'Wedding gifts', 'Baby shower', 'Anniversary', 'Thank you gifts'],
+        'invitations': ['Wedding invitations', 'Baptism (chrzciny)', 'Events', 'Save the dates', 'Party invites'],
+        'cards': ['Birthday cards', 'Valentine cards', 'Christmas cards', 'Sympathy cards', 'Thank you cards'],
+        'b2b': ['Florists (kwiaciarnie)', 'Gift shops', 'Wedding planners', 'Event organizers', 'Card retailers']
+    },
+    
+    'website': 'https://sayplay.co.uk',
+    'shop_url': 'https://sayplay.co.uk/products/voice-message-sticker',
+    'contact': 'partnerships@sayplay.co.uk'
+}
 
+# ============================================================================
+# FREE AI ORCHESTRATOR
+# ============================================================================
 
-# =============================================================================
-# CONTENT HISTORY MANAGER
-# =============================================================================
+class FreeAIOrchestrator:
+    """
+    Multi-AI system using only FREE services:
+    - Gemini 2.0 Flash (2M tokens/day FREE)
+    - DuckDuckGo search (unlimited FREE)
+    - Pollinations.ai images (unlimited FREE)
+    """
+    
+    def __init__(self):
+        self.gemini_key = os.getenv('GEMINI_API_KEY')
+        
+        if not self.gemini_key:
+            raise ValueError("GEMINI_API_KEY not found in environment")
+        
+        # Initialize Gemini
+        genai.configure(api_key=self.gemini_key)
+        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        
+        print("✅ FREE AI Orchestrator initialized")
+        print(f"   🤖 Gemini 2.0 Flash: READY")
+        print(f"   🔍 DuckDuckGo Search: READY")
+        print(f"   🎨 Pollinations.ai: READY")
+    
+    def generate_content(self, prompt: str, max_retries: int = 2) -> str:
+        """Generate content with Gemini (FREE 2M tokens/day)"""
+        for attempt in range(max_retries):
+            try:
+                response = self.model.generate_content(prompt)
+                return response.text
+            except Exception as e:
+                print(f"   ⚠️ Gemini attempt {attempt + 1} failed: {str(e)[:100]}")
+                if attempt < max_retries - 1:
+                    time.sleep(2)
+                    continue
+                raise
+        return ""
+    
+    def search_web(self, query: str, max_results: int = 10) -> List[Dict]:
+        """FREE unlimited web search with DuckDuckGo"""
+        try:
+            ddgs = DDGS()
+            results = list(ddgs.text(query, max_results=max_results))
+            return [
+                {
+                    'title': r['title'],
+                    'snippet': r['body'],
+                    'url': r['href']
+                }
+                for r in results
+            ]
+        except Exception as e:
+            print(f"   ⚠️ DuckDuckGo search failed: {e}")
+            return []
+    
+    def generate_image(self, prompt: str) -> str:
+        """FREE unlimited image generation with Pollinations.ai"""
+        try:
+            # Pollinations.ai - NO API KEY, NO LIMITS!
+            encoded_prompt = quote(prompt)
+            image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1080&height=1080&nologo=true"
+            
+            response = requests.get(image_url, timeout=30)
+            
+            if response.status_code == 200:
+                temp_file = f'/tmp/generated_image_{int(time.time())}.jpg'
+                with open(temp_file, 'wb') as f:
+                    f.write(response.content)
+                return temp_file
+            else:
+                raise Exception(f"Image generation failed: {response.status_code}")
+                
+        except Exception as e:
+            print(f"   ⚠️ Pollinations.ai failed: {e}")
+            # Fallback to brand color gradient
+            return self._create_fallback_image(prompt)
+    
+    def _create_fallback_image(self, theme: str) -> str:
+        """Create simple gradient fallback image"""
+        img = Image.new('RGB', (1080, 1080))
+        draw = ImageDraw.Draw(img)
+        
+        # Orange gradient (SayPlay brand)
+        for y in range(1080):
+            ratio = y / 1080
+            r = int(255 + (255 - 255) * ratio)
+            g = int(140 + (107 - 140) * ratio)
+            b = int(66 + (53 - 66) * ratio)
+            draw.rectangle([(0, y), (1080, y+1)], fill=(r, g, b))
+        
+        try:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 80)
+        except:
+            font = ImageFont.load_default()
+        
+        # Add text
+        text = "SayPlay"
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        x = (1080 - text_width) // 2
+        y = (1080 - text_height) // 2
+        draw.text((x, y), text, fill='white', font=font)
+        
+        temp_file = f'/tmp/fallback_image_{int(time.time())}.jpg'
+        img.save(temp_file, 'JPEG', quality=95)
+        return temp_file
 
-class ContentHistoryManager:
-    """Track previous content to avoid repetition"""
+# ============================================================================
+# FREE RESEARCH ENGINE
+# ============================================================================
+
+class FreeResearchEngine:
+    """
+    FREE research using:
+    - RSS feeds (gift blogs)
+    - DuckDuckGo search
+    - BeautifulSoup scraping
+    """
+    
+    def __init__(self, ai: FreeAIOrchestrator):
+        self.ai = ai
+        
+        # UK Gift Blogs RSS Feeds (FREE!)
+        self.rss_feeds = {
+            'giftwhale': 'https://www.giftwhale.com/feed/',
+            'prezzybox': 'https://www.prezzybox.com/blog/feed/',
+        }
+    
+    def research_trends(self) -> Dict:
+        """Comprehensive FREE trend research"""
+        print("\n" + "=" * 80)
+        print("STEP 1: FREE COMPETITIVE RESEARCH")
+        print("=" * 80)
+        
+        trends = {
+            'web_search': [],
+            'blog_topics': [],
+            'keywords': []
+        }
+        
+        # 1. DuckDuckGo search (FREE unlimited!)
+        print("   🔍 Searching web trends...")
+        queries = [
+            'best personalized gifts UK 2025',
+            'unique gift ideas trending',
+            'voice message gifts'
+        ]
+        
+        for query in queries:
+            results = self.ai.search_web(query, max_results=5)
+            if results:
+                trends['web_search'].extend(results)
+                print(f"   ✅ Found {len(results)} results for '{query}'")
+            time.sleep(1)  # Be polite
+        
+        # 2. RSS Feeds (FREE!)
+        print("   📰 Checking gift blog RSS feeds...")
+        for blog_name, feed_url in self.rss_feeds.items():
+            try:
+                feed = feedparser.parse(feed_url)
+                for entry in feed.entries[:3]:
+                    trends['blog_topics'].append({
+                        'source': blog_name,
+                        'title': entry.title,
+                        'link': entry.link
+                    })
+                print(f"   ✅ {blog_name}: {len(feed.entries[:3])} posts")
+            except Exception as e:
+                print(f"   ⚠️ {blog_name} RSS failed: {e}")
+        
+        # 3. Extract keywords with AI
+        print("   🤖 AI analyzing trends...")
+        all_text = "\n".join([
+            f"{r['title']}: {r['snippet']}" 
+            for r in trends['web_search'][:10]
+        ])
+        
+        keyword_prompt = f"""
+        Analyze these trending topics and extract:
+        1. Top 5 trending themes
+        2. Popular keywords
+        3. Content opportunities for SayPlay voice message stickers
+        
+        Trends: {all_text}
+        
+        Return JSON format:
+        {{
+            "themes": ["theme1", "theme2", ...],
+            "keywords": ["keyword1", "keyword2", ...],
+            "opportunities": ["opportunity1", "opportunity2", ...]
+        }}
+        """
+        
+        try:
+            analysis = self.ai.generate_content(keyword_prompt)
+            # Extract JSON
+            json_match = re.search(r'\{.*\}', analysis, re.DOTALL)
+            if json_match:
+                trends['analysis'] = json.loads(json_match.group())
+                print(f"   ✅ Identified {len(trends['analysis'].get('themes', []))} trending themes")
+        except Exception as e:
+            print(f"   ⚠️ Keyword analysis failed: {e}")
+            trends['analysis'] = {
+                'themes': ['personalized gifts', 'unique presents', 'voice messages'],
+                'keywords': ['gift ideas', 'personalization', 'memorable'],
+                'opportunities': ['emotional connection', 'lasting memories']
+            }
+        
+        return trends
+
+# ============================================================================
+# AI-FIRST CONTENT GENERATOR
+# ============================================================================
+
+class AIFirstContentGenerator:
+    """
+    Generate content optimized for BOTH:
+    - Traditional Google SEO
+    - AI Search (ChatGPT, Claude, Perplexity)
+    """
+    
+    def __init__(self, ai: FreeAIOrchestrator):
+        self.ai = ai
+    
+    def generate_dual_optimized_blog(self, trends: Dict, history: List[str]) -> Dict:
+        """
+        Generate blog post optimized for Google + AI search engines
+        """
+        print("\n" + "=" * 80)
+        print("STEP 2: DUAL-OPTIMIZED CONTENT GENERATION")
+        print("=" * 80)
+        
+        # Select unique topic (avoid repetition)
+        theme = self._select_unique_theme(trends, history)
+        print(f"   🎯 Selected theme: {theme}")
+        
+        # Generate blog post with AI
+        blog_prompt = f"""
+Create a comprehensive blog post about: {theme}
+
+PRODUCT CONTEXT:
+- SayPlay voice message stickers
+- Prices: £8.99 (1 sticker), £24.99 (3-pack), £49.99 (6-pack best value)
+- 60s audio OR 30s video recording
+- No app needed - just tap phone!
+- 12 months storage + download to keep forever
+- Use cases: gifts, invitations, cards, B2B partnerships
+
+OPTIMIZATION REQUIREMENTS:
+
+1. GOOGLE SEO:
+- Title with year "2025" and primary keyword
+- 1200-1500 words
+- H2 and H3 headers
+- Natural keyword integration
+- Internal link opportunities
+- Meta description
+
+2. AI SEARCH OPTIMIZATION:
+- Quick Answer section (first 100 words)
+- FAQ section with clear Q&A format
+- Specific pricing mentions (£8.99, £24.99, £49.99)
+- Step-by-step how-to
+- Citation-friendly format
+- Source attribution
+- Last updated date
+
+3. CONTENT STRUCTURE:
+- Hook (problem/question)
+- Quick Answer (featured snippet worthy)
+- Detailed explanation with examples
+- How SayPlay solves the problem
+- Pricing & packages
+- Real use cases
+- FAQ section
+- Call to action
+
+4. WRITING STYLE:
+- Conversational but authoritative
+- UK English
+- Personal examples
+- Data points when possible
+- Emotional storytelling
+- Clear benefits
+
+Return the blog post in this format:
+Title: [SEO-optimized title]
+Meta Description: [155 chars max]
+Tags: [tag1, tag2, tag3, tag4, tag5]
+
+[Full blog content in markdown]
+"""
+        
+        max_retries = 2
+        for attempt in range(max_retries):
+            try:
+                print(f"   🤖 AI generation attempt {attempt + 1}/{max_retries}...")
+                content = self.ai.generate_content(blog_prompt)
+                
+                # Parse content
+                blog = self._parse_blog_content(content)
+                
+                if len(blog['content']) > 500:
+                    print(f"   ✅ Blog post generated: {len(blog['content'])} chars")
+                    
+                    # Add schemas
+                    blog['schemas'] = self._generate_schemas(blog, theme)
+                    
+                    return blog
+                else:
+                    print(f"   ⚠️ Content too short, retrying...")
+                    continue
+                    
+            except Exception as e:
+                print(f"   ⚠️ Attempt {attempt + 1} failed: {str(e)[:100]}")
+                if attempt < max_retries - 1:
+                    continue
+        
+        # Fallback content
+        print("   ⚠️ Using fallback content template")
+        return self._create_fallback_blog(theme)
+    
+    def _select_unique_theme(self, trends: Dict, history: List[str]) -> str:
+        """Select theme that hasn't been used recently"""
+        
+        # Theme pool
+        themes = [
+            "Creative Ways to Use Voice Message Gifts",
+            "Best Personalized Gifts UK 2025",
+            "Wedding Gift Ideas That Feel Thoughtful",
+            "Birthday Gift Ideas Beyond Generic Cards",
+            "Baby Shower Gifts New Parents Will Love",
+            "Christmas Gift Ideas With Personal Touch",
+            "Valentine's Day Gifts That Show You Care",
+            "Anniversary Gift Ideas For Couples",
+            "Thank You Gifts That Actually Mean Something",
+            "Graduation Gifts They'll Remember Forever",
+            "Long Distance Relationship Gift Ideas",
+            "Gifts For Him That Aren't Generic",
+            "Gifts For Her That Show Effort",
+            "Corporate Gift Ideas That Stand Out",
+            "Wedding Invitation Ideas That Get Noticed"
+        ]
+        
+        # Add trending themes from research
+        if 'analysis' in trends and 'themes' in trends['analysis']:
+            for theme in trends['analysis']['themes']:
+                themes.append(f"{theme.title()} - Ultimate Guide 2025")
+        
+        # Filter out recent themes
+        recent_keywords = set()
+        for hist in history[-7:]:  # Last 7 days
+            recent_keywords.update(hist.lower().split())
+        
+        # Score themes
+        scored_themes = []
+        for theme in themes:
+            theme_words = set(theme.lower().split())
+            overlap = len(theme_words & recent_keywords)
+            scored_themes.append((theme, overlap))
+        
+        # Sort by least overlap (most unique)
+        scored_themes.sort(key=lambda x: x[1])
+        
+        # Return most unique theme
+        return scored_themes[0][0]
+    
+    def _parse_blog_content(self, content: str) -> Dict:
+        """Parse AI-generated blog content"""
+        lines = content.strip().split('\n')
+        
+        blog = {
+            'title': '',
+            'meta_description': '',
+            'tags': [],
+            'content': ''
+        }
+        
+        content_start = 0
+        for i, line in enumerate(lines):
+            if line.startswith('Title:'):
+                blog['title'] = line.replace('Title:', '').strip()
+            elif line.startswith('Meta Description:'):
+                blog['meta_description'] = line.replace('Meta Description:', '').strip()
+            elif line.startswith('Tags:'):
+                tags_str = line.replace('Tags:', '').strip()
+                blog['tags'] = [t.strip() for t in tags_str.split(',')]
+                content_start = i + 1
+                break
+        
+        # Rest is content
+        blog['content'] = '\n'.join(lines[content_start:]).strip()
+        
+        # Ensure we have required fields
+        if not blog['title']:
+            blog['title'] = "Voice Message Gifts - Ultimate Guide 2025"
+        if not blog['meta_description']:
+            blog['meta_description'] = f"Discover {SAYPLAY_PRODUCT['tagline']} Add personal voice messages to gifts from £8.99. No app needed!"
+        if not blog['tags']:
+            blog['tags'] = ['voice-message-gifts', 'personalized-gifts', 'sayplay', 'uk-gifts', 'gift-ideas-2025']
+        
+        return blog
+    
+    def _generate_schemas(self, blog: Dict, theme: str) -> Dict:
+        """Generate schema markup for SEO and AI"""
+        
+        today = datetime.now().isoformat()
+        
+        schemas = {
+            'article': {
+                "@context": "https://schema.org",
+                "@type": "BlogPosting",
+                "headline": blog['title'],
+                "description": blog['meta_description'],
+                "author": {
+                    "@type": "Organization",
+                    "name": "SayPlay"
+                },
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "SayPlay",
+                    "url": SAYPLAY_PRODUCT['website']
+                },
+                "datePublished": today,
+                "dateModified": today
+            },
+            'product': {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": SAYPLAY_PRODUCT['name'],
+                "description": SAYPLAY_PRODUCT['description'],
+                "brand": {
+                    "@type": "Brand",
+                    "name": "SayPlay"
+                },
+                "offers": {
+                    "@type": "Offer",
+                    "price": str(SAYPLAY_PRODUCT['pricing']['single']['price']),
+                    "priceCurrency": "GBP",
+                    "availability": "https://schema.org/InStock",
+                    "url": SAYPLAY_PRODUCT['shop_url']
+                }
+            },
+            'faq': {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "How much does SayPlay cost?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": f"SayPlay voice message stickers start from £{SAYPLAY_PRODUCT['pricing']['single']['price']} for a single sticker. Popular pack of 3 is £{SAYPLAY_PRODUCT['pricing']['popular']['price']}, and best value 6-pack (5+1 FREE) is £{SAYPLAY_PRODUCT['pricing']['best_value']['price']}."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Do I need an app to use SayPlay?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "No! SayPlay works without any app. Just tap your phone to the sticker and the recording system opens automatically. Recipients also just tap to play - no app needed for iPhone or Android."
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "How long can I record?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "You can record up to 60 seconds of audio OR 30 seconds of video per sticker. Messages are stored in the cloud for 12 months and can be downloaded to keep forever."
+                        }
+                    }
+                ]
+            }
+        }
+        
+        return schemas
+    
+    def _create_fallback_blog(self, theme: str) -> Dict:
+        """High-quality fallback content"""
+        
+        title = f"{theme} | SayPlay Voice Message Gifts"
+        
+        content = f"""# {title}
+
+## Quick Answer
+
+Looking for meaningful {theme.lower()}? **SayPlay voice message stickers** (from £8.99) let you add personal 60-second voice or 30-second video messages to any gift, card, or invitation.
+
+**Why SayPlay?**
+- ✅ No app needed - just tap phone!
+- ✅ From £8.99 with free UK delivery
+- ✅ 60s audio OR 30s video recording
+- ✅ Messages last forever (download to keep)
+- ✅ Works with any smartphone
+
+**Shop now**: [{SAYPLAY_PRODUCT['website']}]({SAYPLAY_PRODUCT['website']})
+
+---
+
+## The Problem With Generic Gifts
+
+Generic gifts get forgotten. Cards get thrown away. But what if you could capture the emotion in your voice?
+
+That's where SayPlay changes everything.
+
+## What Are Voice Message Gifts?
+
+SayPlay stickers are magic tap-to-play stickers that bring gifts to life:
+
+1. **Tap** your phone to the sticker
+2. **Record** up to 60 seconds of audio OR 30 seconds of video
+3. **Attach** sticker to your gift, card, or invitation
+4. **Recipient taps** their phone → your message plays!
+
+No app download. No QR codes. Just tap and play! 🎵
+
+## Why SayPlay Is Perfect For {theme}
+
+### 🎯 Personal Connection
+
+Unlike generic gifts, voice messages capture the emotion and warmth in your voice. Recipients can hear your laughter, feel your love, and treasure your words forever.
+
+### 💰 Affordable
+
+Starting from just £8.99, SayPlay makes any gift unforgettable without breaking the bank.
+
+### ⚡ Instant Setup
+
+Record your message in 2 minutes. No complicated setup, no technical knowledge needed.
+
+### ♾️ Keeps Forever
+
+Recipients can download messages and keep them forever. Unlike cards that get thrown away, voice messages become treasured keepsakes.
+
+## Pricing & Packages
+
+### 🎁 Single Sticker - £{SAYPLAY_PRODUCT['pricing']['single']['price']}
+
+Perfect for: One special gift
+
+**Includes**:
+{chr(10).join([f"- ✅ {feature}" for feature in SAYPLAY_PRODUCT['pricing']['single']['features']])}
+
+---
+
+### 🔥 Popular Pack - £{SAYPLAY_PRODUCT['pricing']['popular']['price']} (Save {SAYPLAY_PRODUCT['pricing']['popular']['save_percent']}%!)
+
+Perfect for: Multiple occasions
+
+**Includes**:
+{chr(10).join([f"- ✅ {feature}" for feature in SAYPLAY_PRODUCT['pricing']['popular']['features']])}
+
+---
+
+### ⭐ Best Value - £{SAYPLAY_PRODUCT['pricing']['best_value']['price']} (Save {SAYPLAY_PRODUCT['pricing']['best_value']['save_percent']}% + 1 FREE!)
+
+Perfect for: Events, bulk needs
+
+**Includes**:
+{chr(10).join([f"- ✅ {feature}" for feature in SAYPLAY_PRODUCT['pricing']['best_value']['features']])}
+
+---
+
+## How It Works
+
+{chr(10).join([f"{i+1}. **{step.split('-')[0].strip()}**: {step.split('-')[1].strip() if '-' in step else step}" for i, step in enumerate(SAYPLAY_PRODUCT['how_it_works'])])}
+
+## Real Use Cases
+
+{chr(10).join([f"### {category.title()}n{chr(10).join([f'- {use}' for use in uses[:3]])}" for category, uses in SAYPLAY_PRODUCT['use_cases'].items()])}
+
+## Frequently Asked Questions
+
+### How long can I record?
+**Audio**: 60 seconds (perfect for heartfelt messages)
+**Video**: 30 seconds (great for visual greetings)
+
+### Do recipients need an app?
+**NO!** Just tap any smartphone to the sticker. Works with iPhone and Android. No app download needed!
+
+### Are there QR codes?
+**NO!** That's the beauty - clean, elegant sticker with no ugly QR code. Just tap and play!
+
+### What happens after 12 months?
+You can **download your message anytime** and keep it forever! The 12 months is for cloud storage, but you own the recording.
+
+### Can I use it multiple times?
+**YES!** Unlimited playbacks. Tap as many times as you want.
+
+### How do I record?
+1. Tap phone to sticker
+2. System opens automatically (no app!)
+3. Record your message
+4. Done! Now anyone can tap and listen
+
+## Why Choose SayPlay?
+
+| Feature | SayPlay | QR Codes | Greeting Cards | Digital Only |
+|---------|---------|----------|----------------|--------------|
+| **Price** | From £8.99 | Free but ugly | £3-5 (thrown away) | Free but no physical |
+| **App needed** | ❌ NO! | ✅ YES (scanner) | N/A | ✅ YES |
+| **Keeps forever** | ✅ Download | ❌ Link breaks | ❌ Gets binned | ❌ Lost in messages |
+| **Visual appeal** | ✅ Elegant | ❌ Ugly code | ✅ Pretty but disposable | ❌ No physical |
+| **Emotional impact** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
+
+## Get Started Today
+
+**🎁 Ready to make your gifts unforgettable?**
+
+**Choose your package**:
+- **Try it**: 1 sticker - £{SAYPLAY_PRODUCT['pricing']['single']['price']}
+- **Popular**: 3 stickers - £{SAYPLAY_PRODUCT['pricing']['popular']['price']} (save {SAYPLAY_PRODUCT['pricing']['popular']['save_percent']}%)
+- **Best Value**: 6 stickers - £{SAYPLAY_PRODUCT['pricing']['best_value']['price']} (save {SAYPLAY_PRODUCT['pricing']['best_value']['save_percent']}% + 1 FREE!)
+
+**👉 Shop now**: [{SAYPLAY_PRODUCT['website']}]({SAYPLAY_PRODUCT['website']})
+
+**Free UK delivery on all orders!**
+
+---
+
+## Business Partnerships
+
+Are you a florist, gift shop, or event planner?
+
+**Partner with SayPlay**:
+- Bulk pricing available
+- Increase average order value
+- Co-marketing opportunities
+
+**Contact**: {SAYPLAY_PRODUCT['contact']}
+
+---
+
+*Last updated: {datetime.now().strftime('%d %B %Y')}*
+*Source: SayPlay Official Blog*
+*Author: SayPlay Team*
+"""
+        
+        return {
+            'title': title,
+            'meta_description': f"Discover {theme.lower()} with SayPlay voice message stickers. From £8.99, no app needed. Add personal voice messages to any gift!",
+            'tags': ['sayplay', 'voice-message-gifts', 'personalized-gifts', 'uk-gifts', 'gift-ideas-2025'],
+            'content': content,
+            'schemas': self._generate_schemas({'title': title, 'meta_description': ''}, theme)
+        }
+
+# ============================================================================
+# FREE IMAGE GENERATOR
+# ============================================================================
+
+class FreeImageGenerator:
+    """Generate professional images using FREE Pollinations.ai"""
+    
+    def __init__(self, ai: FreeAIOrchestrator):
+        self.ai = ai
+    
+    def generate_blog_image(self, blog_title: str, theme: str) -> str:
+        """Generate professional product image"""
+        print("\n" + "=" * 80)
+        print("STEP 3: FREE IMAGE GENERATION")
+        print("=" * 80)
+        
+        # Create AI-optimized prompt
+        prompt = f"""
+        Professional product photography,
+        voice message gift sticker on elegant wrapped present,
+        {theme},
+        soft natural lighting,
+        lifestyle shot,
+        high quality,
+        no text,
+        centered composition,
+        warm and inviting atmosphere
+        """
+        
+        print(f"   🎨 Theme: {theme}")
+        print(f"   🎨 Generating with Pollinations.ai (FREE unlimited!)...")
+        
+        image_path = self.ai.generate_image(prompt)
+        
+        if image_path and os.path.exists(image_path):
+            print(f"   ✅ Image generated: {image_path}")
+            return image_path
+        else:
+            print(f"   ⚠️ Using fallback image")
+            return self.ai._create_fallback_image(theme)
+
+# ============================================================================
+# MULTI-PLATFORM PUBLISHER
+# ============================================================================
+
+class MultiPlatformPublisher:
+    """Publish to Shopify, Instagram, Facebook, Pinterest"""
+    
+    def __init__(self):
+        self.shopify_shop = os.getenv('SHOPIFY_SHOP')
+        self.shopify_token = os.getenv('SHOPIFY_ACCESS_TOKEN')
+        self.fb_token = os.getenv('FACEBOOK_PAGE_TOKEN')
+        self.ig_account = os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID')
+        
+        if not all([self.shopify_shop, self.shopify_token]):
+            print("   ⚠️ Shopify credentials missing")
+        
+        print("✅ Multi-Platform Publisher initialized")
+    
+    def publish_to_shopify(self, blog: Dict) -> Optional[str]:
+        """Publish blog to Shopify"""
+        print("\n" + "=" * 80)
+        print("STEP 4: PUBLISHING TO SHOPIFY")
+        print("=" * 80)
+        
+        if not self.shopify_shop or not self.shopify_token:
+            print("   ⚠️ Shopify not configured")
+            return None
+        
+        try:
+            url = f"https://{self.shopify_shop}/admin/api/2024-01/blogs/YOUR_BLOG_ID/articles.json"
+            
+            # Add schema markup to content
+            schema_html = f"\n\n<!-- Schema Markup -->\n"
+            for schema_type, schema_data in blog.get('schemas', {}).items():
+                schema_html += f'<script type="application/ld+json">\n{json.dumps(schema_data, indent=2)}\n</script>\n'
+            
+            full_content = blog['content'] + schema_html
+            
+            data = {
+                "article": {
+                    "title": blog['title'],
+                    "body_html": full_content,
+                    "tags": ", ".join(blog['tags']),
+                    "published": True,
+                    "metafields": [
+                        {
+                            "namespace": "seo",
+                            "key": "description",
+                            "value": blog['meta_description'],
+                            "type": "single_line_text_field"
+                        }
+                    ]
+                }
+            }
+            
+            headers = {
+                "X-Shopify-Access-Token": self.shopify_token,
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(url, json=data, headers=headers, timeout=30)
+            
+            if response.status_code in [200, 201]:
+                article = response.json()['article']
+                print(f"   ✅ Published: {blog['title']}")
+                return str(article['id'])
+            else:
+                print(f"   ❌ Failed: {response.status_code} - {response.text[:200]}")
+                return None
+                
+        except Exception as e:
+            print(f"   ❌ Error: {str(e)[:200]}")
+            return None
+    
+    def publish_to_instagram(self, caption: str, image_path: str) -> Optional[str]:
+        """Publish to Instagram with error handling"""
+        print("\n" + "=" * 80)
+        print("STEP 5: PUBLISHING TO INSTAGRAM")
+        print("=" * 80)
+        
+        if not self.fb_token or not self.ig_account:
+            print("   ⚠️ Instagram not configured")
+            return None
+        
+        try:
+            # Validate caption
+            if not caption or len(caption.strip()) == 0:
+                caption = f"Add your voice to any gift! {SAYPLAY_PRODUCT['tagline']} From £8.99. sayplay.co.uk 🎁"
+                print("   ⚠️ Using fallback caption")
+            
+            # Instagram limit
+            if len(caption) > 2200:
+                caption = caption[:2180] + "... 🎁"
+            
+            print(f"   📝 Caption: {len(caption)} chars")
+            
+            # Upload to Catbox (FREE!)
+            with open(image_path, 'rb') as img:
+                files = {'fileToUpload': img}
+                data = {'reqtype': 'fileupload'}
+                response = requests.post('https://catbox.moe/user/api.php', data=data, files=files, timeout=30)
+            
+            if response.status_code != 200:
+                raise Exception(f"Catbox upload failed: {response.status_code}")
+            
+            image_url = response.text.strip()
+            print(f"   ✅ Image uploaded: {image_url}")
+            
+            # Create Instagram container
+            container_url = f'https://graph.facebook.com/v18.0/{self.ig_account}/media'
+            container_data = {
+                'image_url': image_url,
+                'caption': caption,
+                'access_token': self.fb_token
+            }
+            
+            print(f"   📦 Creating container...")
+            container_response = requests.post(container_url, data=container_data, timeout=30)
+            
+            if container_response.status_code != 200:
+                raise Exception(f"Container failed: {container_response.text}")
+            
+            container_id = container_response.json()['id']
+            print(f"   ✅ Container: {container_id}")
+            
+            # Wait for Instagram to process
+            print(f"   ⏳ Waiting 20 seconds...")
+            time.sleep(20)
+            
+            # Publish
+            publish_url = f'https://graph.facebook.com/v18.0/{self.ig_account}/media_publish'
+            publish_data = {
+                'creation_id': container_id,
+                'access_token': self.fb_token
+            }
+            
+            print(f"   🚀 Publishing...")
+            publish_response = requests.post(publish_url, data=publish_data, timeout=30)
+            
+            if publish_response.status_code != 200:
+                raise Exception(f"Publish failed: {publish_response.text}")
+            
+            post_id = publish_response.json()['id']
+            print(f"   ✅ Posted to Instagram: {post_id}")
+            return post_id
+            
+        except Exception as e:
+            print(f"   ❌ Instagram error: {str(e)[:200]}")
+            return None
+    
+    def publish_to_facebook(self, caption: str, image_path: str) -> Optional[str]:
+        """Publish to Facebook Page (with error handling)"""
+        print("\n" + "=" * 80)
+        print("STEP 6: PUBLISHING TO FACEBOOK")
+        print("=" * 80)
+        
+        try:
+            # Upload to Catbox
+            with open(image_path, 'rb') as img:
+                files = {'fileToUpload': img}
+                data = {'reqtype': 'fileupload'}
+                response = requests.post('https://catbox.moe/user/api.php', data=data, files=files, timeout=30)
+            
+            image_url = response.text.strip()
+            print(f"   ✅ Image uploaded: {image_url}")
+            
+            # Post to Facebook
+            # Implementation here...
+            print(f"   ⚠️ Facebook posting skipped (implement if needed)")
+            return None
+            
+        except Exception as e:
+            print(f"   ⚠️ Facebook skipped: {str(e)[:100]}")
+            return None
+
+# ============================================================================
+# CONTENT HISTORY & ANTI-REPETITION
+# ============================================================================
+
+class ContentHistory:
+    """Track content history to avoid repetition"""
     
     def __init__(self, history_file: str = 'content_history.json'):
         self.history_file = history_file
         self.history = self._load_history()
     
     def _load_history(self) -> List[Dict]:
-        """Load content history from file"""
-        try:
-            if os.path.exists(self.history_file):
+        """Load history from file"""
+        if os.path.exists(self.history_file):
+            try:
                 with open(self.history_file, 'r') as f:
-                    history = json.load(f)
-                # Filter last 7 days only
-                cutoff_date = (datetime.now() - timedelta(days=7)).isoformat()
-                return [h for h in history if h.get('date', '') >= cutoff_date]
-            return []
-        except Exception as e:
-            print(f"   ⚠️  Error loading history: {e}")
-            return []
-    
-    def _save_history(self):
-        """Save history to file"""
-        try:
-            with open(self.history_file, 'w') as f:
-                json.dump(self.history, f, indent=2)
-        except Exception as e:
-            print(f"   ⚠️  Error saving history: {e}")
-    
-    def add_entry(self, content_data: Dict):
-        """Add new content to history"""
-        entry = {
-            'date': datetime.now().isoformat(),
-            'blog_title': content_data.get('blog_title', ''),
-            'main_trend': content_data.get('main_trend', ''),
-            'keywords': content_data.get('keywords', []),
-            'style': content_data.get('style', ''),
-            'hashtags': content_data.get('hashtags', [])
-        }
-        self.history.append(entry)
-        self._save_history()
-    
-    def get_recent_topics(self) -> List[str]:
-        """Get topics from last 7 days"""
-        topics = []
-        for entry in self.history:
-            topics.append(entry.get('main_trend', ''))
-            topics.extend(entry.get('keywords', []))
-        return list(set(topics))  # Unique only
-    
-    def get_recent_styles(self) -> List[str]:
-        """Get styles used recently"""
-        return [entry.get('style', '') for entry in self.history]
-    
-    def is_topic_recent(self, topic: str) -> bool:
-        """Check if topic was used in last 3 days"""
-        cutoff_date = (datetime.now() - timedelta(days=3)).isoformat()
-        recent_entries = [h for h in self.history if h.get('date', '') >= cutoff_date]
-        recent_topics = []
-        for entry in recent_entries:
-            recent_topics.append(entry.get('main_trend', ''))
-            recent_topics.extend(entry.get('keywords', []))
-        
-        # Check similarity
-        topic_lower = topic.lower()
-        for recent_topic in recent_topics:
-            if recent_topic.lower() in topic_lower or topic_lower in recent_topic.lower():
-                return True
-        return False
-
-
-# =============================================================================
-# TREND RESEARCH ENGINE
-# =============================================================================
-
-class TrendResearcher:
-    """Research current gift trends across multiple platforms"""
-    
-    def __init__(self):
-        self.today = datetime.now().strftime("%Y-%m-%d")
-        
-    def get_google_trends(self) -> List[str]:
-        """Get trending gift searches from Google Trends"""
-        try:
-            from pytrends.request import TrendReq
-            pytrends = TrendReq(hl='en-GB', tz=0)
-            
-            gift_keywords = [
-                'gift ideas', 'birthday gift', 'christmas gift',
-                'personalized gift', 'unique gift', 'anniversary gift',
-                'wedding gift', 'baby shower gift', 'valentine gift',
-                'mother day gift', 'father day gift'
-            ]
-            
-            pytrends.build_payload(gift_keywords, timeframe='now 7-d', geo='GB')
-            interest = pytrends.interest_over_time()
-            
-            trending = []
-            if not interest.empty:
-                for keyword in gift_keywords:
-                    if keyword in interest.columns:
-                        avg_interest = interest[keyword].mean()
-                        trending.append({
-                            'keyword': keyword,
-                            'interest': avg_interest
-                        })
-            
-            trending.sort(key=lambda x: x['interest'], reverse=True)
-            return [t['keyword'] for t in trending[:5]]
-            
-        except Exception as e:
-            print(f"   ⚠️  Google Trends error: {e}")
-            return self._get_seasonal_fallback()
-    
-    def _get_seasonal_fallback(self) -> List[str]:
-        """Seasonal gift trends based on current date"""
-        month = datetime.now().month
-        day = datetime.now().day
-        
-        if month == 12:
-            return ['Christmas gifts', 'Last minute Christmas', 'Stocking stuffers', 'Secret Santa', 'Christmas personalized']
-        elif month == 2 and day < 15:
-            return ["Valentine's Day gifts", 'Romantic gifts', 'Gifts for girlfriend', 'Gifts for boyfriend', 'Valentine personalized']
-        elif month == 3:
-            return ["Mother's Day gifts", 'Gifts for mum', 'Personalized Mother Day', 'Thoughtful mum gifts', 'Mother Day UK']
-        elif month == 6:
-            return ["Father's Day gifts", 'Gifts for dad', 'Personalized Father Day', 'Unique dad gifts', 'Father Day UK']
-        else:
-            return ['Birthday gifts', 'Personalized gifts', 'Unique gifts', 'Thoughtful presents', 'Custom gifts UK']
-    
-    def scrape_reddit_giftideas(self) -> List[Dict[str, str]]:
-        """Scrape r/GiftIdeas for trending topics"""
-        try:
-            url = 'https://www.reddit.com/r/GiftIdeas/hot.json'
-            headers = {'User-Agent': 'SayPlayMarketing/1.0'}
-            response = requests.get(url, headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                posts = []
-                for post in data['data']['children'][:10]:
-                    post_data = post['data']
-                    posts.append({
-                        'title': post_data['title'],
-                        'upvotes': post_data['ups'],
-                        'comments': post_data['num_comments']
-                    })
-                return posts
-        except Exception as e:
-            print(f"   ⚠️  Reddit scraping error: {e}")
+                    return json.load(f)
+            except:
+                return []
         return []
     
-    def get_amazon_bestsellers_topics(self) -> List[str]:
-        """Trending gift categories"""
-        categories = [
-            'Tech gadgets', 'Home decor', 'Personalized items',
-            'Books', 'Beauty products', 'Kitchen accessories',
-            'Toys and games', 'Jewelry', 'Sports equipment', 'Craft supplies'
+    def save_history(self, entry: Dict):
+        """Save new entry to history"""
+        self.history.append({
+            'date': datetime.now().isoformat(),
+            'title': entry.get('title', ''),
+            'theme': entry.get('theme', ''),
+            'platforms': entry.get('platforms', [])
+        })
+        
+        # Keep last 30 days only
+        cutoff = datetime.now() - timedelta(days=30)
+        self.history = [
+            h for h in self.history 
+            if datetime.fromisoformat(h['date']) > cutoff
         ]
-        return random.sample(categories, random.randint(3, 5))
+        
+        with open(self.history_file, 'w') as f:
+            json.dump(self.history, f, indent=2)
     
-    def analyze_pinterest_trends(self) -> List[str]:
-        """Pinterest trending searches"""
-        month = datetime.now().month
-        base_trends = ['DIY gifts', 'Gift wrapping', 'Handmade gifts', 'Gift baskets', 'Experience gifts']
-        
-        if month == 12:
-            base_trends.extend(['Christmas crafts', 'Holiday gift guides'])
-        elif month in [10, 11]:
-            base_trends.extend(['Fall gift ideas', 'Thanksgiving gifts'])
-        
-        return base_trends[:5]
-    
-    def research_all_sources(self) -> Dict[str, Any]:
-        """Comprehensive trend research"""
-        print("🔍 RESEARCHING GIFT TRENDS...")
-        
-        research_data = {
-            'date': self.today,
-            'sources': {}
-        }
-        
-        print("   📊 Checking Google Trends...")
-        research_data['sources']['google_trends'] = self.get_google_trends()
-        
-        print("   🔴 Scraping Reddit r/GiftIdeas...")
-        research_data['sources']['reddit'] = self.scrape_reddit_giftideas()
-        
-        print("   🛒 Analyzing Amazon categories...")
-        research_data['sources']['amazon_categories'] = self.get_amazon_bestsellers_topics()
-        
-        print("   📌 Checking Pinterest trends...")
-        research_data['sources']['pinterest'] = self.analyze_pinterest_trends()
-        
-        print("   ✅ Research complete!")
-        return research_data
-
-
-# =============================================================================
-# INTELLIGENT IMAGE GENERATOR
-# =============================================================================
-
-class IntelligentImageGenerator:
-    """Generate images based on research data and content theme"""
-    
-    def __init__(self):
-        self.width = 1080
-        self.height = 1080
-    
-    def create_image_from_theme(self, theme: str, trend_data: Dict, style: str = 'modern') -> str:
-        """Create themed image based on research and content"""
-        
-        # Analyze theme for visual elements
-        theme_lower = theme.lower()
-        
-        # Determine color scheme based on theme
-        if 'christmas' in theme_lower or 'holiday' in theme_lower:
-            colors = self._get_christmas_palette()
-        elif 'valentine' in theme_lower or 'romantic' in theme_lower or 'love' in theme_lower:
-            colors = self._get_valentine_palette()
-        elif 'birthday' in theme_lower:
-            colors = self._get_birthday_palette()
-        elif 'wedding' in theme_lower or 'anniversary' in theme_lower:
-            colors = self._get_wedding_palette()
-        else:
-            colors = self._get_default_palette()
-        
-        # Create image based on style
-        if style == 'gradient':
-            return self._create_gradient_design(theme, colors, trend_data)
-        elif style == 'minimal':
-            return self._create_minimal_design(theme, colors, trend_data)
-        else:
-            return self._create_vibrant_design(theme, colors, trend_data)
-    
-    def _get_christmas_palette(self) -> Dict:
-        return {
-            'primary': '#C41E3A',  # Christmas red
-            'secondary': '#165B33', # Christmas green
-            'accent': '#FFD700',    # Gold
-            'bg_start': '#1a472a',
-            'bg_end': '#8b0000'
-        }
-    
-    def _get_valentine_palette(self) -> Dict:
-        return {
-            'primary': '#FF1493',  # Deep pink
-            'secondary': '#C71585', # Medium violet red
-            'accent': '#FFB6C1',   # Light pink
-            'bg_start': '#8B008B',
-            'bg_end': '#FF69B4'
-        }
-    
-    def _get_birthday_palette(self) -> Dict:
-        return {
-            'primary': '#FF6B6B',
-            'secondary': '#4ECDC4',
-            'accent': '#FFE66D',
-            'bg_start': '#A8E6CF',
-            'bg_end': '#FF8B94'
-        }
-    
-    def _get_wedding_palette(self) -> Dict:
-        return {
-            'primary': '#E8D5C4',  # Champagne
-            'secondary': '#B8A99A', # Tan
-            'accent': '#FFD700',   # Gold
-            'bg_start': '#F5F5DC',
-            'bg_end': '#DEB887'
-        }
-    
-    def _get_default_palette(self) -> Dict:
-        return {
-            'primary': '#6A0DAD',
-            'secondary': '#FF69B4',
-            'accent': '#FFD700',
-            'bg_start': '#6a0dad',
-            'bg_end': '#ff69b4'
-        }
-    
-    def _create_gradient_design(self, theme: str, colors: Dict, trend_data: Dict) -> str:
-        """Modern gradient design"""
-        img = Image.new('RGB', (self.width, self.height))
-        draw = ImageDraw.Draw(img)
-        
-        # Gradient background
-        for y in range(self.height):
-            ratio = y / self.height
-            r1, g1, b1 = int(colors['bg_start'][1:3], 16), int(colors['bg_start'][3:5], 16), int(colors['bg_start'][5:7], 16)
-            r2, g2, b2 = int(colors['bg_end'][1:3], 16), int(colors['bg_end'][3:5], 16), int(colors['bg_end'][5:7], 16)
-            r = int(r1 + (r2 - r1) * ratio)
-            g = int(g1 + (g2 - g1) * ratio)
-            b = int(b1 + (b2 - b1) * ratio)
-            draw.rectangle([(0, y), (self.width, y+1)], fill=(r, g, b))
-        
-        # Load fonts
-        try:
-            brand_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 60)
-            title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 75)
-            body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 42)
-        except:
-            brand_font = title_font = body_font = ImageFont.load_default()
-        
-        # Brand
-        brand = "SAYPLAY"
-        self._draw_centered_text(draw, brand, brand_font, 80, '#FFFFFF')
-        
-        # Trending badge
-        badge = "🔥 TRENDING NOW 🔥"
-        self._draw_centered_text(draw, badge, body_font, 200, colors['accent'])
-        
-        # Theme (max 3 words)
-        theme_words = theme.split()[:3]
-        y_pos = 320
-        for word in theme_words:
-            self._draw_centered_text(draw, word, title_font, y_pos, '#FFFFFF', shadow=True)
-            y_pos += 90
-        
-        # Features
-        features = ["🎁 Perfect Addition", "💝 Add Your Voice", "♾️ Memories Forever"]
-        y_pos = 680
-        for feature in features:
-            self._draw_centered_text(draw, feature, body_font, y_pos, '#FFFFFF')
-            y_pos += 65
-        
-        # CTA
-        draw.rectangle([(80, 920), (self.width-80, 1000)], fill='#FFFFFF')
-        self._draw_centered_text(draw, "sayplay.co.uk", brand_font, 930, colors['primary'])
-        
-        temp_file = f'/tmp/instagram_{int(time.time())}.jpg'
-        img.save(temp_file, 'JPEG', quality=95)
-        return temp_file
-    
-    def _create_minimal_design(self, theme: str, colors: Dict, trend_data: Dict) -> str:
-        """Minimal clean design"""
-        img = Image.new('RGB', (self.width, self.height), color='#FFFFFF')
-        draw = ImageDraw.Draw(img)
-        
-        # Accent bars
-        draw.rectangle([(0, 0), (self.width, 30)], fill=colors['primary'])
-        draw.rectangle([(0, self.height-30), (self.width, self.height)], fill=colors['primary'])
-        
-        try:
-            title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 70)
-            body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 44)
-        except:
-            title_font = body_font = ImageFont.load_default()
-        
-        # Content
-        self._draw_centered_text(draw, "SayPlay", title_font, 150, colors['primary'])
-        self._draw_centered_text(draw, "Voice Message Stickers", body_font, 270, '#333333')
-        self._draw_centered_text(draw, theme[:50], body_font, 420, '#666666')
-        self._draw_centered_text(draw, "✨ Personal", body_font, 580, colors['secondary'])
-        self._draw_centered_text(draw, "💝 Permanent", body_font, 660, colors['secondary'])
-        self._draw_centered_text(draw, "🎁 Perfect", body_font, 740, colors['secondary'])
-        self._draw_centered_text(draw, "sayplay.co.uk", title_font, 880, colors['primary'])
-        
-        temp_file = f'/tmp/instagram_{int(time.time())}.jpg'
-        img.save(temp_file, 'JPEG', quality=95)
-        return temp_file
-    
-    def _create_vibrant_design(self, theme: str, colors: Dict, trend_data: Dict) -> str:
-        """Vibrant colorful design - IMPROVED for readability"""
-        img = Image.new('RGB', (self.width, self.height))
-        draw = ImageDraw.Draw(img)
-        
-        # Use gradient instead of blocks for better look
-        primary_rgb = tuple(int(colors['primary'][i:i+2], 16) for i in (1, 3, 5))
-        accent_rgb = tuple(int(colors['accent'][i:i+2], 16) for i in (1, 3, 5))
-        
-        for y in range(self.height):
-            ratio = y / self.height
-            r = int(primary_rgb[0] + (accent_rgb[0] - primary_rgb[0]) * ratio)
-            g = int(primary_rgb[1] + (accent_rgb[1] - primary_rgb[1]) * ratio)
-            b = int(primary_rgb[2] + (accent_rgb[2] - primary_rgb[2]) * ratio)
-            draw.rectangle([(0, y), (self.width, y+1)], fill=(r, g, b))
-        
-        # Dark overlay for better text contrast
-        overlay = Image.new('RGBA', (self.width, self.height), (0, 0, 0, 100))
-        img = Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
-        draw = ImageDraw.Draw(img)
-        
-        try:
-            brand_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 80)
-            title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 70)
-            body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 45)
-        except:
-            brand_font = title_font = body_font = ImageFont.load_default()
-        
-        # Content with better readability
-        self._draw_centered_text(draw, "SAYPLAY", brand_font, 100, '#FFFFFF', shadow=True)
-        self._draw_centered_text(draw, "Voice Message Stickers", body_font, 220, '#FFFFFF')
-        
-        # Theme
-        theme_short = ' '.join(theme.split()[:3])
-        self._draw_centered_text(draw, theme_short, title_font, 400, '#FFFFFF', shadow=True)
-        
-        # Benefits
-        benefits = [
-            "🎤 Record Your Message",
-            "🎁 Stick on Any Gift",
-            "♾️ They Play Forever"
+    def get_recent_themes(self, days: int = 7) -> List[str]:
+        """Get themes from last N days"""
+        cutoff = datetime.now() - timedelta(days=days)
+        recent = [
+            h['theme'] for h in self.history
+            if datetime.fromisoformat(h['date']) > cutoff
         ]
-        y_pos = 550
-        for benefit in benefits:
-            self._draw_centered_text(draw, benefit, body_font, y_pos, '#FFFFFF')
-            y_pos += 70
-        
-        # CTA
-        draw.rectangle([(100, 900), (self.width-100, 980)], fill='#FFFFFF')
-        self._draw_centered_text(draw, "sayplay.co.uk", brand_font, 910, colors['primary'])
-        
-        temp_file = f'/tmp/instagram_{int(time.time())}.jpg'
-        img.save(temp_file, 'JPEG', quality=95)
-        return temp_file
-    
-    def _draw_centered_text(self, draw, text, font, y, color, shadow=False):
-        """Draw centered text"""
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        x = (self.width - text_width) // 2
-        
-        if shadow:
-            draw.text((x+3, y+3), text, font=font, fill=(0, 0, 0, 100))
-        draw.text((x, y), text, font=font, fill=color)
-    
-    def _draw_outlined_text(self, draw, text, font, y, fill_color, outline_color):
-        """Draw text with outline"""
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        x = (self.width - text_width) // 2
-        
-        # Outline
-        for adj_x in range(-3, 4):
-            for adj_y in range(-3, 4):
-                draw.text((x+adj_x, y+adj_y), text, font=font, fill=outline_color)
-        # Main
-        draw.text((x, y), text, font=font, fill=fill_color)
-
-
-# =============================================================================
-# AI CONTENT CREATOR
-# =============================================================================
-
-class IntelligentContentCreator:
-    """AI-powered content creation with anti-repetition"""
-    
-    def __init__(self, gemini_api_key: str, history_manager: ContentHistoryManager):
-        genai.configure(api_key=gemini_api_key)
-        self.model = genai.GenerativeModel('gemini-pro')
-        self.history = history_manager
-    
-    def analyze_trends_and_create_strategy(self, research_data: Dict) -> Dict:
-        """AI analyzes trends and creates marketing strategy (avoiding recent topics)"""
-        print("🤖 AI ANALYZING TRENDS...")
-        
-        # Get recent topics to avoid
-        recent_topics = self.history.get_recent_topics()
-        recent_styles = self.history.get_recent_styles()
-        
-        avoid_instruction = ""
-        if recent_topics:
-            avoid_instruction = f"\n\nIMPORTANT: AVOID these topics (used in last 7 days): {', '.join(recent_topics[:10])}\nFind DIFFERENT angles and trends that haven't been covered recently."
-        
-        prompt = f"""You are a professional marketing strategist for SayPlay - voice message stickers for gifts.
-
-PRODUCT: SayPlay
-- NFC stickers that record/play voice/video messages
-- Stick on ANY gift for personalization
-- Permanent, no app, no batteries
-- £19.99, free UK delivery
-- Website: sayplay.co.uk
-
-TODAY'S RESEARCH DATA:
-{json.dumps(research_data, indent=2)}
-
-RECENT CONTENT HISTORY:
-{avoid_instruction}
-
-YOUR TASK:
-1. Identify TOP 3 trends (DIFFERENT from recent content)
-2. Explain SayPlay angle for each
-3. Create specific gift pairings
-4. Identify emotional triggers
-5. Target audiences
-
-FORMAT AS JSON:
-{{
-  "top_trends": [
-    {{
-      "trend_name": "...",
-      "why_relevant": "...",
-      "sayplay_angle": "...",
-      "gift_pairings": ["..."],
-      "emotional_trigger": "...",
-      "target_audience": "..."
-    }}
-  ],
-  "overall_strategy": "...",
-  "recommended_hashtags": ["..."],
-  "content_style": "emotional|problem_solution|urgency"
-}}
-
-Be creative and find FRESH angles!"""
-
-        try:
-            response = self.model.generate_content(prompt)
-            response_text = response.text
-            
-            if '```json' in response_text:
-                json_start = response_text.find('```json') + 7
-                json_end = response_text.find('```', json_start)
-                response_text = response_text[json_start:json_end].strip()
-            elif '```' in response_text:
-                json_start = response_text.find('```') + 3
-                json_end = response_text.find('```', json_start)
-                response_text = response_text[json_start:json_end].strip()
-            
-            strategy = json.loads(response_text)
-            
-            # Check if main trend is too similar to recent
-            main_trend = strategy['top_trends'][0]['trend_name']
-            if self.history.is_topic_recent(main_trend):
-                print(f"   ⚠️  Topic '{main_trend}' too similar to recent, requesting alternative...")
-                # Try second trend
-                if len(strategy['top_trends']) > 1:
-                    strategy['top_trends'][0], strategy['top_trends'][1] = strategy['top_trends'][1], strategy['top_trends'][0]
-            
-            print("   ✅ Strategy created!")
-            return strategy
-            
-        except Exception as e:
-            print(f"   ⚠️  AI analysis error: {e}")
-            return self._fallback_strategy()
-    
-    def _fallback_strategy(self) -> Dict:
-        """Fallback if AI fails"""
-        return {
-            "top_trends": [{
-                "trend_name": "Thoughtful Personalized Gifts",
-                "why_relevant": "Always relevant",
-                "sayplay_angle": "Add personal touch to any gift",
-                "gift_pairings": ["Any gift + SayPlay"],
-                "emotional_trigger": "Connection",
-                "target_audience": "Everyone"
-            }],
-            "overall_strategy": "Personalization focus",
-            "recommended_hashtags": ["#PersonalizedGifts", "#SayPlay"],
-            "content_style": "emotional"
-        }
-    
-    def generate_blog_post(self, strategy: Dict) -> Dict:
-        """Generate blog post with retry and proper fallback"""
-        print("📝 GENERATING BLOG POST...")
-        
-        top_trend = strategy['top_trends'][0]
-        
-        prompt = f"""Write an engaging, SEO-optimized blog post for SayPlay voice message stickers.
-
-STRATEGY:
-{json.dumps(strategy, indent=2)}
-
-FOCUS TREND: {top_trend['trend_name']}
-
-PRODUCT DETAILS:
-- SayPlay voice message stickers
-- NFC technology - tap to play
-- Record voice/video messages
-- Stick on ANY gift
-- Messages last FOREVER
-- No app, no batteries needed
-- £19.99, free UK delivery
-- Website: sayplay.co.uk
-
-BLOG POST REQUIREMENTS:
-
-TITLE:
-- SEO-friendly with year "2025"
-- Include main keyword
-- Engaging and clickable
-- Example: "Unique Gift Ideas 2025: Transform Any Present with SayPlay"
-
-STRUCTURE (600-800 words):
-
-1. HOOK (100 words)
-   - Relatable story or question
-   - Emotional connection
-   - Set up the problem
-
-2. THE PROBLEM (150 words)
-   - Why generic gifts fail
-   - The challenge of making gifts meaningful
-   - Connect to the trend: {top_trend['trend_name']}
-
-3. THE SOLUTION: SayPlay (200 words)
-   - How SayPlay works
-   - Why it's different
-   - Key benefits with examples
-   - Real use cases from strategy
-
-4. PERFECT FOR (150 words)
-   - List 4-5 occasions with examples
-   - Use gift pairings from strategy: {top_trend.get('gift_pairings', [])}
-   - Specific scenarios
-
-5. HOW IT WORKS (100 words)
-   - 3 simple steps
-   - No app needed
-   - Forever playback
-
-6. CALL TO ACTION (100 words)
-   - Urgency (Christmas coming, etc)
-   - Price: £19.99
-   - Free delivery
-   - Link: sayplay.co.uk
-
-WRITING STYLE:
-- Conversational and warm
-- Personal stories/examples
-- UK English
-- Emotional but not cheesy
-- Focus on memories and connection
-
-JSON FORMAT:
-{{
-  "title": "...",
-  "content": "...",
-  "meta_description": "...",
-  "tags": ["tag1", "tag2", "tag3"]
-}}
-
-Write the FULL blog post content now!"""
-
-        max_retries = 2
-        for attempt in range(max_retries):
-            try:
-                print(f"   🤖 AI generation attempt {attempt + 1}/{max_retries}...")
-                response = self.model.generate_content(prompt)
-                response_text = response.text
-                
-                if '```json' in response_text:
-                    json_start = response_text.find('```json') + 7
-                    json_end = response_text.find('```', json_start)
-                    response_text = response_text[json_start:json_end].strip()
-                elif '```' in response_text:
-                    json_start = response_text.find('```') + 3
-                    json_end = response_text.find('```', json_start)
-                    response_text = response_text[json_start:json_end].strip()
-                
-                blog_post = json.loads(response_text)
-                
-                # Validate content
-                if blog_post.get('content') and len(blog_post['content']) > 100:
-                    print(f"   ✅ Blog created: {blog_post['title']} ({len(blog_post['content'])} chars)")
-                    return blog_post
-                else:
-                    print(f"   ⚠️  Content too short, retrying...")
-                    continue
-                    
-            except Exception as e:
-                print(f"   ⚠️  Attempt {attempt + 1} failed: {str(e)[:100]}")
-                if attempt < max_retries - 1:
-                    continue
-        
-        # FALLBACK with real content
-        print("   ⚠️  Using fallback blog content")
-        return self._create_fallback_blog(top_trend)
-    
-    def _create_fallback_blog(self, trend: Dict) -> Dict:
-        """Create quality fallback blog content"""
-        trend_name = trend.get('trend_name', 'Personalized Gifts')
-        
-        content = f"""
-<h2>Looking for {trend_name} That Actually Mean Something?</h2>
-
-<p>We've all been there. You've found the perfect gift – a beautiful necklace, a cosy jumper, or maybe a special book. But something's missing. That personal touch. That connection that shows you really care.</p>
-
-<p>Generic gifts get forgotten. Cards get thrown away. But what if you could add your voice to any gift? A birthday message they can play forever. A wedding toast that never fades. A "well done" they can hear whenever they need encouragement.</p>
-
-<h2>Meet SayPlay: Voice Message Stickers That Last Forever</h2>
-
-<p>SayPlay voice message stickers transform any gift into something unforgettable. Here's how it works:</p>
-
-<ol>
-<li><strong>Record Your Message:</strong> Use your phone to record a voice or video message (up to 5 minutes!)</li>
-<li><strong>Stick It On:</strong> Attach the NFC sticker to any gift, card, or photo frame</li>
-<li><strong>They Tap & Play:</strong> The recipient simply taps their phone to the sticker – no app needed – and hears your message forever</li>
-</ol>
-
-<p>No batteries. No expiry date. No complicated setup. Just tap and play, forever.</p>
-
-<h2>Perfect For Every Occasion</h2>
-
-<h3>🎂 Birthdays</h3>
-<p>Stick a SayPlay on a birthday card with a personal message. Pair it with their favourite perfume, a book, or even a simple bunch of flowers – your voice makes it special.</p>
-
-<h3>💍 Weddings</h3>
-<p>Create a heartfelt wedding toast they can keep forever. Stick it inside a photo frame with your favourite picture of the couple.</p>
-
-<h3>👶 Baby Showers</h3>
-<p>Record advice, well wishes, or a lullaby for the new parents. Add it to a keepsake box or baby's memory book.</p>
-
-<h3>🎄 Christmas (Just Days Away!)</h3>
-<p>Make this Christmas unforgettable. Record your Christmas message, a family story, or even grandma's famous recipe – stick it on any gift.</p>
-
-<h2>Why SayPlay Stands Out</h2>
-
-<ul>
-<li>✨ <strong>Personal:</strong> Your voice, your words, your emotion</li>
-<li>♾️ <strong>Permanent:</strong> Unlike digital messages, SayPlay stickers work forever</li>
-<li>🎁 <strong>Perfect Addition:</strong> Works with any gift you already planned to give</li>
-<li>📱 <strong>No App:</strong> Recipients just tap with any smartphone</li>
-<li>💝 <strong>Affordable:</strong> Just £19.99 with free UK delivery</li>
-</ul>
-
-<h2>Real Stories, Real Emotions</h2>
-
-<p>"I stuck a SayPlay on my nan's birthday card with a message from all the grandkids. She plays it every morning and it makes her smile." – Sarah, Manchester</p>
-
-<p>"We used SayPlay at our wedding – each guest left a voice message. Now we have a whole album of voices from people who matter most." – James & Emma, London</p>
-
-<h2>Ready to Make Your Gifts Unforgettable?</h2>
-
-<p>This year, don't settle for generic. Don't let your heartfelt message get lost in a text or thrown away with wrapping paper.</p>
-
-<p>Add your voice to any gift. Create memories that last forever.</p>
-
-<p><strong>Visit sayplay.co.uk today</strong> – perfect for Christmas, birthdays, and every meaningful moment. Just £19.99 with free UK delivery.</p>
-
-<p>Because the best gifts aren't just things. They're moments. They're voices. They're memories that last forever.</p>
-"""
-        
-        return {
-            "title": f"{trend_name}: Make Every Gift Personal with SayPlay 2025",
-            "content": content,
-            "meta_description": f"Transform any gift into an unforgettable memory with SayPlay voice message stickers. Perfect for {trend_name.lower()} - just £19.99 with free UK delivery.",
-            "tags": ["sayplay", "personalized-gifts", "voice-message", "unique-gifts-2025", "uk-gifts"]
-        }
-    
-    def generate_social_posts(self, strategy: Dict, blog_title: str) -> Dict:
-        """Generate social media posts"""
-        print("📱 GENERATING SOCIAL MEDIA POSTS...")
-        
-        style = strategy.get('content_style', 'emotional')
-        
-        prompt = f"""Create engaging social media content for SayPlay voice message stickers.
-
-STRATEGY: {json.dumps(strategy, indent=2)}
-BLOG TITLE: {blog_title}
-STYLE: {style}
-
-PRODUCT REMINDER:
-- SayPlay = NFC voice message stickers
-- Record voice/video messages
-- Stick on ANY gift
-- They last FOREVER
-- £19.99, free UK delivery
-- sayplay.co.uk
-
-CREATE HIGHLY ENGAGING POSTS:
-
-1. INSTAGRAM (400-600 words):
-   - Start with HOOK (emoji + question or statement)
-   - Explain the problem/emotion (2-3 lines)
-   - Introduce SayPlay as solution (2-3 lines)
-   - 3-5 bullet points with emoji (Perfect for: ...)
-   - Call to action
-   - 12-15 relevant hashtags
-   - Use style: {style}
-   - Make it conversational and engaging!
-
-2. FACEBOOK (250-350 words):
-   - Conversational tone
-   - Tell a mini story
-   - Include benefits
-   - Clear CTA
-   - 5-8 hashtags
-
-3. TWITTER/X (250-280 chars):
-   - Punchy hook
-   - Key benefit
-   - CTA + URL
-   - 3-5 hashtags
-
-IMPORTANT: Make Instagram caption LONG and ENGAGING - minimum 400 words!
-
-JSON FORMAT:
-{{
-  "instagram": {{"caption": "...", "style": "{style}"}},
-  "facebook": {{"caption": "..."}},
-  "twitter": {{"tweet": "..."}}
-}}"""
-
-        try:
-            response = self.model.generate_content(prompt)
-            response_text = response.text
-            
-            if '```json' in response_text:
-                json_start = response_text.find('```json') + 7
-                json_end = response_text.find('```', json_start)
-                response_text = response_text[json_start:json_end].strip()
-            
-            posts = json.loads(response_text)
-            
-            # Validate Instagram caption length
-            ig_caption = posts.get('instagram', {}).get('caption', '')
-            if len(ig_caption) < 200:
-                print(f"   ⚠️  Instagram caption too short ({len(ig_caption)} chars), regenerating...")
-                # Add default engaging caption
-                posts['instagram']['caption'] = f"""✨ Looking for the PERFECT gift that shows you really care? ✨
-
-Generic gifts get forgotten. But SayPlay voice message stickers? They create memories that last FOREVER. ❤️
-
-🎤 Record your voice/video
-📦 Stick it on ANY gift
-♾️ They tap & play - forever
-
-Perfect for:
-- Birthdays 🎂
-- Weddings 💍
-- Baby showers 👶
-- Christmas (4 days!) 🎄
-
-Just £19.99 at sayplay.co.uk
-
-Tag someone who needs to see this! 👇
-
-#SayPlay #PersonalizedGifts #VoiceMessage #GiftIdeas #UniqueGifts #ThoughtfulGifts #Christmas2025 #BirthdayGift #WeddingGift #VoiceStickers #MemorableMoments #GiftingMadeEasy"""
-            
-            print(f"   ✅ Social posts created! (Instagram: {len(posts['instagram']['caption'])} chars)")
-            return posts
-        except Exception as e:
-            print(f"   ⚠️  Error: {e}")
-            return {
-                "instagram": {"caption": """✨ Transform ANY gift into something unforgettable with SayPlay! ✨
-
-Record your voice, stick it on a gift, and they'll treasure it forever. No app needed!
-
-🎁 Perfect for birthdays, weddings, Christmas
-💝 Just £19.99 with free UK delivery
-♾️ Memories that last forever
-
-Shop now: sayplay.co.uk
-
-#SayPlay #PersonalizedGifts #VoiceMessage #GiftIdeas #UniqueGifts #Christmas2025 #BirthdayGift #ThoughtfulPresents""", "style": style},
-                "facebook": {"caption": "Make gifts personal with SayPlay voice stickers! Record your message, stick it on any gift, and create memories that last forever. £19.99 at sayplay.co.uk #SayPlay #PersonalizedGifts"},
-                "twitter": {"tweet": "Transform any gift with SayPlay voice stickers! Record your message, they play it forever. 🎁 sayplay.co.uk #SayPlay #PersonalizedGifts #UniqueGifts"}
-            }
-
-
-# =============================================================================
-# MULTI-PLATFORM PUBLISHER
-# =============================================================================
-
-class MultiPlatformPublisher:
-    """Publish to all platforms"""
-    
-    def __init__(self):
-        self.shopify_shop = Config.SHOPIFY_SHOP
-        self.shopify_token = Config.SHOPIFY_TOKEN
-        self.page_token = Config.FACEBOOK_PAGE_TOKEN
-        self.instagram_id = Config.INSTAGRAM_ACCOUNT_ID
-        self.facebook_page_id = Config.FACEBOOK_PAGE_ID
-        self.image_gen = IntelligentImageGenerator()
-        
-        # Twitter/X OAuth1
-        self.twitter_api_key = Config.TWITTER_API_KEY
-        self.twitter_api_secret = Config.TWITTER_API_SECRET
-        self.twitter_access_token = Config.TWITTER_ACCESS_TOKEN
-        self.twitter_access_secret = Config.TWITTER_ACCESS_SECRET
-    
-    def upload_to_catbox(self, image_path: str) -> str:
-        """Upload image to Catbox.moe (no API key needed!)"""
-        print("   ☁️  Uploading to Catbox.moe...")
-        try:
-            with open(image_path, 'rb') as img:
-                response = requests.post(
-                    'https://catbox.moe/user/api.php',
-                    data={'reqtype': 'fileupload'},
-                    files={'fileToUpload': img},
-                    timeout=30
-                )
-            
-            if response.status_code == 200:
-                # Catbox returns direct URL as text
-                url = response.text.strip()
-                if url.startswith('http'):
-                    print(f"   ✅ Image uploaded: {url}")
-                    return url
-                else:
-                    raise Exception(f"Catbox upload failed: {url}")
-            else:
-                raise Exception(f"Catbox upload failed: HTTP {response.status_code}")
-        except Exception as e:
-            print(f"   ⚠️  Catbox upload error: {e}")
-            raise
-    
-    def publish_to_shopify(self, blog_post: Dict) -> str:
-        """Publish to Shopify blog"""
-        print("📝 PUBLISHING TO SHOPIFY...")
-        
-        url = f'https://{self.shopify_shop}/admin/api/2024-01/articles.json'
-        headers = {
-            'Content-Type': 'application/json',
-            'X-Shopify-Access-Token': self.shopify_token
-        }
-        
-        # Get blog ID
-        blogs_url = f'https://{self.shopify_shop}/admin/api/2024-01/blogs.json'
-        blogs_response = requests.get(blogs_url, headers=headers)
-        
-        if blogs_response.status_code == 200:
-            blogs = blogs_response.json().get('blogs', [])
-            if blogs:
-                blog_id = blogs[0]['id']
-                url = f'https://{self.shopify_shop}/admin/api/2024-01/blogs/{blog_id}/articles.json'
-        
-        data = {
-            "article": {
-                "title": blog_post['title'],
-                "author": "SayPlay Team",
-                "tags": ", ".join(blog_post.get('tags', ['sayplay-marketing'])),
-                "body_html": blog_post['content'].replace('\n', '<br>'),
-                "published": True
-            }
-        }
-        
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 201:
-            article = response.json()['article']
-            print(f"   ✅ Published: {blog_post['title']}")
-            return f"https://{self.shopify_shop}/blogs/news/{article['handle']}"
-        raise Exception(f"Shopify error: {response.text}")
-    
-    def publish_to_instagram(self, caption: str, image_path: str) -> str:
-        """Publish to Instagram Business Account"""
-        print("📸 PUBLISHING TO INSTAGRAM...")
-        
-        # Validate and truncate caption if needed
-        if not caption or len(caption.strip()) == 0:
-            caption = "Check out our latest personalized gift ideas! 🎁 #SayPlay #PersonalizedGifts"
-            print("   ⚠️  Empty caption, using fallback")
-        
-        # Instagram caption limit is 2200 characters
-        if len(caption) > 2200:
-            caption = caption[:2180] + "... 🎁"
-            print(f"   ⚠️  Caption truncated to {len(caption)} chars")
-        
-        print(f"   📝 Caption length: {len(caption)} chars")
-        
-        image_url = self.upload_to_catbox(image_path)
-        
-        # Create container
-        print("   📦 Creating Instagram container...")
-        container_url = f'https://graph.facebook.com/v18.0/{self.instagram_id}/media'
-        container_data = {
-            'image_url': image_url,
-            'caption': caption,
-            'access_token': self.page_token
-        }
-        
-        print(f"   🔗 Image URL: {image_url}")
-        print(f"   📝 Caption preview: {caption[:100]}...")
-        
-        container_response = requests.post(container_url, data=container_data)
-        if container_response.status_code != 200:
-            raise Exception(f"Instagram container error: {container_response.text}")
-        
-        container_id = container_response.json()['id']
-        print(f"   ✅ Container created: {container_id}")
-        
-        # WAIT for Instagram to process the image
-        print("   ⏳ Waiting 20 seconds for Instagram to process image...")
-        time.sleep(20)
-        
-        # Publish
-        print("   🚀 Publishing to Instagram...")
-        publish_url = f'https://graph.facebook.com/v18.0/{self.instagram_id}/media_publish'
-        publish_data = {
-            'creation_id': container_id,
-            'access_token': self.page_token
-        }
-        
-        publish_response = requests.post(publish_url, data=publish_data)
-        if publish_response.status_code != 200:
-            raise Exception(f"Instagram publish error: {publish_response.text}")
-        
-        post_id = publish_response.json()['id']
-        print(f"   ✅ Posted to Instagram: {post_id}")
-        return post_id
-    
-    def publish_to_facebook_page(self, caption: str, image_path: str) -> str:
-        """Publish to Facebook PAGE (not personal profile)"""
-        print("📘 PUBLISHING TO FACEBOOK PAGE...")
-        
-        if not self.facebook_page_id:
-            print("   ⚠️  Facebook Page ID not configured")
-            return None
-        
-        image_url = self.upload_to_catbox(image_path)
-        
-        # Post to PAGE using PAGE ID
-        post_url = f'https://graph.facebook.com/v18.0/{self.facebook_page_id}/photos'
-        post_data = {
-            'url': image_url,
-            'caption': caption,
-            'access_token': self.page_token
-        }
-        
-        response = requests.post(post_url, data=post_data)
-        if response.status_code != 200:
-            raise Exception(f"Facebook error: {response.text}")
-        
-        post_id = response.json()['id']
-        print(f"   ✅ Posted to Facebook PAGE: {post_id}")
-        return post_id
-    
-    def publish_to_twitter(self, tweet_text: str, image_path: str) -> str:
-        """Publish to Twitter/X"""
-        print("🐦 PUBLISHING TO TWITTER/X...")
-        
-        if not all([self.twitter_api_key, self.twitter_access_token]):
-            print("   ⚠️  Twitter credentials not configured")
-            return None
-        
-        try:
-            # Using requests-oauthlib for Twitter API v1.1
-            from requests_oauthlib import OAuth1
-            
-            auth = OAuth1(
-                self.twitter_api_key,
-                self.twitter_api_secret,
-                self.twitter_access_token,
-                self.twitter_access_secret
-            )
-            
-            # Upload image
-            media_url = 'https://upload.twitter.com/1.1/media/upload.json'
-            with open(image_path, 'rb') as img:
-                files = {'media': img}
-                media_response = requests.post(media_url, auth=auth, files=files)
-            
-            if media_response.status_code != 200:
-                raise Exception(f"Twitter media upload error: {media_response.text}")
-            
-            media_id = media_response.json()['media_id_string']
-            
-            # Post tweet
-            tweet_url = 'https://api.twitter.com/1.1/statuses/update.json'
-            tweet_data = {
-                'status': tweet_text,
-                'media_ids': media_id
-            }
-            
-            tweet_response = requests.post(tweet_url, auth=auth, data=tweet_data)
-            if tweet_response.status_code != 200:
-                raise Exception(f"Twitter post error: {tweet_response.text}")
-            
-            tweet_id = tweet_response.json()['id_str']
-            print(f"   ✅ Posted to Twitter: {tweet_id}")
-            return tweet_id
-            
-        except ImportError:
-            print("   ⚠️  requests-oauthlib not installed, skipping Twitter")
-            return None
-        except Exception as e:
-            print(f"   ⚠️  Twitter error: {e}")
-            return None
-
-
-# =============================================================================
-# MAIN ORCHESTRATOR
-# =============================================================================
+        return recent
+
+# ============================================================================
+# MAIN ENTERPRISE SYSTEM
+# ============================================================================
 
 def main():
-    """Complete intelligent marketing system"""
-    print("=" * 80)
-    print("🤖 SAYPLAY FINAL COMPLETE MARKETING SYSTEM")
-    print("=" * 80)
-    print()
+    """Run enterprise AI marketing system"""
     
-    # Initialize
-    history = ContentHistoryManager()
-    researcher = TrendResearcher()
-    content_creator = IntelligentContentCreator(Config.GEMINI_API_KEY, history)
-    publisher = MultiPlatformPublisher()
-    image_gen = IntelligentImageGenerator()
+    print("\n" + "=" * 80)
+    print("🚀 ENTERPRISE AI MARKETING SYSTEM - 100% FREE!")
+    print("=" * 80)
+    print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Product: {SAYPLAY_PRODUCT['name']}")
+    print(f"Budget: $0/month")
+    print("=" * 80)
     
     try:
+        # Initialize systems
+        ai = FreeAIOrchestrator()
+        research = FreeResearchEngine(ai)
+        content_gen = AIFirstContentGenerator(ai)
+        image_gen = FreeImageGenerator(ai)
+        publisher = MultiPlatformPublisher()
+        history = ContentHistory()
+        
         # STEP 1: Research
-        print("\n" + "=" * 80)
-        print("STEP 1: TREND RESEARCH")
-        print("=" * 80)
-        research_data = researcher.research_all_sources()
+        trends = research.research_trends()
         
+        # Save research
         with open('daily_research.json', 'w') as f:
-            json.dump(research_data, f, indent=2)
-        print(f"\n📊 Research saved")
+            json.dump(trends, f, indent=2)
+        print("\n   💾 Research saved to daily_research.json")
         
-        # STEP 2: AI Analysis
-        print("\n" + "=" * 80)
-        print("STEP 2: AI STRATEGY (Anti-Repetition Active)")
-        print("=" * 80)
-        strategy = content_creator.analyze_trends_and_create_strategy(research_data)
+        # STEP 2: Generate content
+        recent_themes = history.get_recent_themes(days=7)
+        blog = content_gen.generate_dual_optimized_blog(trends, recent_themes)
         
-        with open('marketing_strategy.json', 'w') as f:
-            json.dump(strategy, f, indent=2)
-        print(f"\n💡 Strategy saved")
+        # Save blog
+        with open('generated_blog.json', 'w') as f:
+            json.dump(blog, f, indent=2)
+        print("\n   💾 Blog saved to generated_blog.json")
         
-        # STEP 3: Content Generation
-        print("\n" + "=" * 80)
-        print("STEP 3: CONTENT GENERATION")
-        print("=" * 80)
+        # STEP 3: Generate image
+        image_path = image_gen.generate_blog_image(blog['title'], blog.get('theme', 'gift ideas'))
         
-        blog_post = content_creator.generate_blog_post(strategy)
-        social_posts = content_creator.generate_social_posts(strategy, blog_post['title'])
+        # STEP 4-6: Publish
+        results = {
+            'shopify': publisher.publish_to_shopify(blog),
+            'instagram': publisher.publish_to_instagram(blog['content'][:400], image_path),
+            'facebook': publisher.publish_to_facebook(blog['content'][:400], image_path)
+        }
         
-        # LOG GENERATED CONTENT
-        print("\n" + "=" * 80)
-        print("GENERATED CONTENT PREVIEW:")
-        print("=" * 80)
-        print(f"📝 Blog: {blog_post['title']}")
-        print(f"📸 Instagram caption ({len(social_posts['instagram']['caption'])} chars):")
-        print(f"   {social_posts['instagram']['caption'][:150]}...")
-        print(f"📘 Facebook caption ({len(social_posts['facebook']['caption'])} chars):")
-        print(f"   {social_posts['facebook']['caption'][:100]}...")
-        print(f"🐦 Twitter tweet ({len(social_posts['twitter']['tweet'])} chars):")
-        print(f"   {social_posts['twitter']['tweet']}")
-        print("=" * 80)
-        
-        # STEP 4: Image Generation
-        print("\n" + "=" * 80)
-        print("STEP 4: INTELLIGENT IMAGE GENERATION")
-        print("=" * 80)
-        
-        top_trend = strategy['top_trends'][0]['trend_name']
-        # Prefer gradient (best looking) over vibrant (too busy)
-        image_style = random.choice(['gradient', 'gradient', 'minimal'])  # 2/3 chance gradient
-        print(f"   🎨 Creating {image_style} design for: {top_trend}")
-        
-        image_path = image_gen.create_image_from_theme(top_trend, research_data, image_style)
-        print(f"   ✅ Image created: {image_path}")
-        
-        # STEP 5: Multi-Platform Publishing
-        print("\n" + "=" * 80)
-        print("STEP 5: MULTI-PLATFORM PUBLISHING")
-        print("=" * 80)
-        
-        # Shopify
-        shopify_url = publisher.publish_to_shopify(blog_post)
-        
-        # Instagram
-        ig_post_id = publisher.publish_to_instagram(social_posts['instagram']['caption'], image_path)
-        
-        # Facebook PAGE (with error handling)
-        try:
-            fb_post_id = publisher.publish_to_facebook_page(social_posts['facebook']['caption'], image_path)
-        except Exception as e:
-            print(f"   ⚠️  Facebook Page posting skipped: {str(e)[:100]}")
-            fb_post_id = None
-        
-        # Twitter/X
-        twitter_id = publisher.publish_to_twitter(social_posts['twitter']['tweet'], image_path)
-        
-        # STEP 6: Update History
-        print("\n" + "=" * 80)
-        print("STEP 6: UPDATING CONTENT HISTORY")
-        print("=" * 80)
-        
-        history.add_entry({
-            'blog_title': blog_post['title'],
-            'main_trend': top_trend,
-            'keywords': blog_post.get('tags', []),
-            'style': strategy.get('content_style', ''),
-            'hashtags': strategy.get('recommended_hashtags', [])
+        # Update history
+        history.save_history({
+            'title': blog['title'],
+            'theme': blog.get('theme', ''),
+            'platforms': [k for k, v in results.items() if v]
         })
-        print("   ✅ History updated")
         
         # Summary
         print("\n" + "=" * 80)
-        print("✅ MARKETING CAMPAIGN COMPLETE!")
+        print("✅ CAMPAIGN COMPLETE!")
         print("=" * 80)
-        print(f"\n📊 Today's Focus: {top_trend}")
-        print(f"📝 Blog: {shopify_url}")
-        print(f"📸 Instagram: {ig_post_id}")
-        print(f"📘 Facebook: {fb_post_id}")
-        print(f"🐦 Twitter: {twitter_id}")
-        print("\n" + "=" * 80)
+        print(f"📝 Blog: {blog['title']}")
+        print(f"📸 Instagram: {'✅' if results['instagram'] else '❌'}")
+        print(f"📘 Facebook: {'✅' if results['facebook'] else '❌'}")
+        print(f"🛒 Shopify: {'✅' if results['shopify'] else '❌'}")
+        print("=" * 80)
+        
+        return 0
         
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n❌ SYSTEM ERROR: {e}")
         import traceback
         traceback.print_exc()
-        raise
-
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
