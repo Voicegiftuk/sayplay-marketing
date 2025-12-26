@@ -118,16 +118,35 @@ class FreeAIOrchestrator:
         if not self.gemini_key:
             raise ValueError("GEMINI_API_KEY not found in environment")
         
-        # Initialize Gemini with STABLE model (not experimental!)
+        # Initialize Gemini with STABLE model (try multiple names for compatibility)
         genai.configure(api_key=self.gemini_key)
-        # ✅ FIXED: Use gemini-1.5-flash (stable, FREE tier)
-        # ❌ OLD: gemini-2.0-flash-exp (experimental, requires billing)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
         
-        print("✅ FREE AI Orchestrator initialized")
-        print(f"   🤖 Gemini 1.5 Flash: READY (stable FREE tier - 15 RPM)")
-        print(f"   🔍 DuckDuckGo Search: READY (unlimited)")
-        print(f"   🎨 Pollinations.ai: READY (unlimited)")
+        # Try multiple model names (different APIs use different naming)
+        model_names = [
+            'gemini-1.5-flash-latest',  # Latest stable
+            'gemini-1.5-flash',          # Without -latest suffix
+            'gemini-1.5-flash-001',      # Version number
+            'models/gemini-1.5-flash',   # With models/ prefix
+        ]
+        
+        model_loaded = False
+        for model_name in model_names:
+            try:
+                self.model = genai.GenerativeModel(model_name)
+                # Test the model with a simple call
+                test_response = self.model.generate_content("Hi")
+                print(f"✅ FREE AI Orchestrator initialized")
+                print(f"   🤖 Gemini Model: {model_name} (stable FREE tier - 15 RPM)")
+                print(f"   🔍 DuckDuckGo Search: READY (unlimited)")
+                print(f"   🎨 Pollinations.ai: READY (unlimited)")
+                model_loaded = True
+                break
+            except Exception as e:
+                print(f"   ⚠️ Model '{model_name}' failed: {str(e)[:50]}")
+                continue
+        
+        if not model_loaded:
+            raise ValueError(f"Could not load any Gemini model. Tried: {', '.join(model_names)}")
     
     def generate_content(self, prompt: str, max_retries: int = 2) -> str:
         """Generate content with Gemini (FREE 15 RPM, 1M TPM)"""
@@ -493,7 +512,8 @@ Tags: [tag1, tag2, tag3, tag4, tag5]
             'title': '',
             'meta_description': '',
             'tags': [],
-            'content': ''
+            'content': '',
+            'theme': ''  # ✅ FIXED: Always include theme key
         }
         
         content_start = 0
