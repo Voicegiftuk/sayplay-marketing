@@ -1,0 +1,88 @@
+{
+  "twitter": [],
+  "reddit": [],
+  "google_trends": [
+    {
+      "keyword": "personalized gifts",
+      "interest_score": 23,
+      "trend": "stable"
+    },
+    {
+      "keyword": "wedding gift ideas",
+      "interest_score": 12,
+      "trend": "stable"
+    },
+    {
+      "keyword": "unique gifts UK",
+      "interest_score": 9,
+      "trend": "stable"
+    }
+  ],
+  "tiktok": [
+    {
+      "hashtag": "#giftideas",
+      "estimated_views": "High",
+      "relevance": "gifts"
+    },
+    {
+      "hashtag": "#personalizedgifts",
+      "estimated_views": "High",
+      "relevance": "gifts"
+    },
+    {
+      "hashtag": "#uniquegifts",
+      "estimated_views": "High",
+      "relevance": "gifts"
+    },
+    {
+      "hashtag": "#weddinggifts",
+      "estimated_views": "High",
+      "relevance": "gifts"
+    },
+    {
+      "hashtag": "#creativegifts",
+      "estimated_views": "High",
+      "relevance": "gifts"
+    },
+    {
+      "hashtag": "#giftinspo",
+      "estimated_views": "High",
+      "relevance": "gifts"
+    }
+  ],
+  "competitors": [
+    {
+      "name": "Moonpig",
+      "url": "https://www.moonpig.com",
+      "status": "monitored",
+      "focus": "personalized gifts"
+    },
+    {
+      "name": "Funky Pigeon",
+      "url": "https://www.funkypigeon.com",
+      "status": "monitored",
+      "focus": "personalized gifts"
+    },
+    {
+      "name": "Not On The High Street",
+      "url": "https://www.notonthehighstreet.com",
+      "status": "monitored",
+      "focus": "personalized gifts"
+    },
+    {
+      "name": "Prezzybox",
+      "url": "https://www.prezzybox.com",
+      "status": "monitored",
+      "focus": "personalized gifts"
+    }
+  ],
+  "analysis": {
+    "themes": [
+      "The Ultimate Guide to Personalized Gifts 2025: Why Voice Message Stickers are the Next Big Trend",
+      "7 Unique Wedding Gift Ideas UK Couples Will Actually Love in 2025",
+      "How to Create the Most Unique Personalized Gifts UK: Adding a Human Touch with Sound",
+      "2025 Wedding Trends: Why Voice Message Stickers are the Top Personalized Wedding Gift Idea",
+      "Beyond the Card: 5 Unique Gifts UK Shoppers are Buying for Special Occasions in 2025"
+    ]
+  }
+}
