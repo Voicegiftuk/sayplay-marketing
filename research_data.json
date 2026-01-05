@@ -1,23 +1,7 @@
 {
   "twitter": [],
   "reddit": [],
-  "google_trends": [
-    {
-      "keyword": "personalized gifts",
-      "interest_score": 23,
-      "trend": "stable"
-    },
-    {
-      "keyword": "wedding gift ideas",
-      "interest_score": 18,
-      "trend": "stable"
-    },
-    {
-      "keyword": "unique gifts UK",
-      "interest_score": 8,
-      "trend": "stable"
-    }
-  ],
+  "google_trends": [],
   "tiktok": [
     {
       "hashtag": "#giftideas",
@@ -78,11 +62,11 @@
   ],
   "analysis": {
     "themes": [
-      "The 2025 Guide to Personalized Gifts: Why Sentimental Voice Stickers are Replacing Generic Presents",
-      "Beyond the Registry: Unique Wedding Gift Ideas UK Guests Will Love in 2025",
-      "DIY Personalized Gift Ideas for 2025: How to Add a Voice Message to Any Present",
-      "Unique Wedding Favors UK: The Trendiest Way to Thank Your Guests in 2025",
-      "The Power of Personalization: Why Voice Message Gifts Are the Hottest Trend for 2025"
+      "The 2025 Wedding Trend: Why Personalized Voice Message Gifts Are Replacing Generic Cards",
+      "Beyond the Card: How Hybrid Physical-Digital Gifts Are Redefining Personalization in the UK Market",
+      "DIY Gifting for 2025: The Rise of Personalized Voice Messages as the Ultimate Affordable Luxury",
+      "Emotional Gifting UK: Making Mother's Day 2025 Unforgettable with Hyper-Personalized Voice Stickers",
+      "Unique Wedding Favors 2025: How to Create Meaningful Guest Experiences with Personalized Audio Messages"
     ]
   }
 }
