@@ -1,7 +1,18 @@
 {
   "twitter": [],
   "reddit": [],
-  "google_trends": [],
+  "google_trends": [
+    {
+      "keyword": "personalized gifts",
+      "interest_score": 26,
+      "trend": "stable"
+    },
+    {
+      "keyword": "wedding gift ideas",
+      "interest_score": 14,
+      "trend": "stable"
+    }
+  ],
   "tiktok": [
     {
       "hashtag": "#giftideas",
@@ -62,11 +73,11 @@
   ],
   "analysis": {
     "themes": [
-      "7 Unique Ways to Use Voice Message Stickers for Your 2025 UK Wedding",
-      "The Future of Personalization: Why Audio-Enabled Gifts are Trending in the UK for 2025",
-      "Creative DIY Anniversary Gift Ideas: How to Add a Voice Message to Any Present",
-      "Moving Beyond the Card: How SayPlay Voice Stickers are Redefining UK Gifting Trends in 2025",
-      "Long-Distance Gift Ideas for 2025: Staying Connected with Personalised Voice Message Stickers"
+      "The Ultimate Guide to Unique Wedding Gift Ideas UK 2025: Why Voice Message Stickers are Trending",
+      "5 Personalized Gift Trends for 2025: How Voice Technology is Changing the UK Gifting Market",
+      "How to Create the Best Personalized Wedding Gifts in 2025 Using SayPlay Voice Stickers",
+      "Top 10 Thoughtful Personalized Gifts for UK Anniversaries and Birthdays in 2025",
+      "Why SayPlay Voice Stickers are the Must-Have Personalization Trend for 2025 UK Weddings"
     ]
   }
 }
