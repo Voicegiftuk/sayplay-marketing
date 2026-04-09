@@ -3,6 +3,16 @@
   "reddit": [],
   "google_trends": [
     {
+      "keyword": "personalized gifts",
+      "interest_score": 14,
+      "trend": "stable"
+    },
+    {
+      "keyword": "wedding gift ideas",
+      "interest_score": 24,
+      "trend": "stable"
+    },
+    {
       "keyword": "unique gifts UK",
       "interest_score": 2,
       "trend": "stable"
@@ -68,11 +78,11 @@
   ],
   "analysis": {
     "themes": [
-      "Beyond Photos: The Top 5 Unique Wedding Keepsakes for 2025 UK Couples",
-      "Gifting Trends 2025: Why Personalized Voice Message Gifts Are the New Standard for UK Anniversaries",
-      "From Voice Note to Keepsake: The Ultimate Guide to Unique Personalization for UK Gifts",
-      "How to Find Truly Unique Gifts in the UK: Why SayPlay Stickers Beat Generic Cards Every Time",
-      "The Rise of Experiential Gifting: Why Sentimental Keepsakes Are Replacing Standard Gifts in 2025"
+      "The Ultimate Guide to Personalized Wedding Gifts 2025: Why Voice Messages Are the New Trend",
+      "Beyond Engraving: 5 Unique UK Gift Ideas for Every Occasion in 2025",
+      "How to Choose a Meaningful Personalized Gift for Your Anniversary",
+      "From Generic to Heartfelt: The Power of Personalized Gifts with a Voice Message",
+      "The Top Wedding Favor Trends UK 2025: Why Personalized Voice Stickers are Perfect for Guests"
     ]
   }
 }
