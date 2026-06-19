@@ -4,7 +4,12 @@
   "google_trends": [
     {
       "keyword": "personalized gifts",
-      "interest_score": 11,
+      "interest_score": 14,
+      "trend": "stable"
+    },
+    {
+      "keyword": "voice message gift",
+      "interest_score": 1,
       "trend": "stable"
     }
   ],
@@ -68,11 +73,11 @@
   ],
   "analysis": {
     "themes": [
-      "The Rise of Audio Keepsakes: Why Personalized Voice Message Stickers Are the Top Gift Trend for 2025",
-      "How to Personalize Your Wedding Stationery with SayPlay Voice Message Stickers in the UK",
-      "Beyond the Card: 5 Creative Ways to Use Voice Message Stickers for Meaningful UK Gifts in 2025",
-      "The Ultimate Guide to Sentimental Gifting: Adding a Personal Voice Touch to Your 2025 Celebrations",
-      "Personalized Wedding Favours: Why UK Couples Are Choosing SayPlay Voice Stickers for Their 2025 Big Day"
+      "The Future of Personalization: Why Voice Message Gifts Will Dominate 2025",
+      "5 Creative Ways to Use Voice Message Stickers for UK Weddings in 2025",
+      "How to Create a DIY Voice Message Gift: The Ultimate UK Guide to Audio QR Stickers",
+      "Affordable Audio Guestbook Alternatives: How to Use Voice Stickers for UK Weddings in 2025",
+      "Sentimental Personalized Gifts: How to Use Voice Stickers to Connect with Loved Ones in the UK"
     ]
   }
 }
