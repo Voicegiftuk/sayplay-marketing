@@ -1,28 +1,7 @@
 {
   "twitter": [],
   "reddit": [],
-  "google_trends": [
-    {
-      "keyword": "personalized gifts",
-      "interest_score": 18,
-      "trend": "stable"
-    },
-    {
-      "keyword": "voice message gift",
-      "interest_score": 1,
-      "trend": "stable"
-    },
-    {
-      "keyword": "wedding gift ideas",
-      "interest_score": 39,
-      "trend": "stable"
-    },
-    {
-      "keyword": "unique gifts UK",
-      "interest_score": 2,
-      "trend": "stable"
-    }
-  ],
+  "google_trends": [],
   "tiktok": [
     {
       "hashtag": "#giftideas",
@@ -83,11 +62,11 @@
   ],
   "analysis": {
     "themes": [
-      "10 Unique Wedding Gift Ideas for 2025: Why Voice Message Gifts Are Trending",
-      "The Ultimate Guide to Unique Gifts in the UK: Why Personalized Voice Messages are the Next Big Thing",
-      "How to Create the Perfect Voice Message Gift: A Step-by-Step Guide to Personalized Gifting",
-      "Creative Wedding Gift Ideas UK: How to Use Voice Message Stickers for a Personal Touch in 2025",
-      "Why Voice Message Stickers are the Most Meaningful Personalized Gifts of 2025"
+      "5 Creative Ways to Use Voice Message Stickers for Your UK Wedding in 2025",
+      "The Rise of Sound-On Gifting: Why Voice QR Code Stickers are the Top Personalization Trend for 2025",
+      "How to Make a Talking Scrapbook: A Step-by-Step Guide to Audio Gift Personalization",
+      "The Modern UK Guestbook: How to Use Voice Message Stickers for Interactive Wedding Keepsakes",
+      "Sentimental Gifting in 2025: How Voice Gift Tags are Bridging the Gap for Long-Distance Families"
     ]
   }
 }
