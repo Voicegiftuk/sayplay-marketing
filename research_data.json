@@ -3,8 +3,23 @@
   "reddit": [],
   "google_trends": [
     {
+      "keyword": "personalized gifts",
+      "interest_score": 9,
+      "trend": "stable"
+    },
+    {
+      "keyword": "voice message gift",
+      "interest_score": 1,
+      "trend": "stable"
+    },
+    {
       "keyword": "wedding gift ideas",
-      "interest_score": 27,
+      "interest_score": 22,
+      "trend": "stable"
+    },
+    {
+      "keyword": "unique gifts UK",
+      "interest_score": 3,
       "trend": "stable"
     }
   ],
@@ -68,11 +83,11 @@
   ],
   "analysis": {
     "themes": [
-      "Unique Wedding Gift Ideas UK: Why Voice Message Stickers are the 2025 Trend",
-      "How to Personalise Your Wedding Gifts in 2025 with Voice Message Stickers",
-      "5 Creative Wedding Gift Ideas for UK Couples in 2025",
-      "The Ultimate Guide to Personalised Wedding Favours and Cards (UK 2025)",
-      "Why Voice Message Gift Stickers are the Must-Have Wedding Personalisation Trend for 2025"
+      "10 Unique Wedding Gift Ideas for 2025: Why Voice Message Stickers are a Must-Have",
+      "The Ultimate Guide to Unique Gifts in the UK: How to Create a Voice Message Gift",
+      "How Personalized Gifts are Changing in 2025: The Rise of Voice Message Stickers",
+      "Creative Wedding Gift Ideas UK: Adding a Personal Voice Message to Your Present",
+      "Step-by-Step Guide: How to Make a Voice Message Gift for Someone Special in 2025"
     ]
   }
 }
