@@ -4,17 +4,22 @@
   "google_trends": [
     {
       "keyword": "personalized gifts",
-      "interest_score": 11,
+      "interest_score": 13,
+      "trend": "stable"
+    },
+    {
+      "keyword": "voice message gift",
+      "interest_score": 1,
       "trend": "stable"
     },
     {
       "keyword": "wedding gift ideas",
-      "interest_score": 11,
+      "interest_score": 22,
       "trend": "stable"
     },
     {
       "keyword": "unique gifts UK",
-      "interest_score": 10,
+      "interest_score": 11,
       "trend": "stable"
     }
   ],
@@ -78,11 +83,11 @@
   ],
   "analysis": {
     "themes": [
-      "10 Unique Personalized Gifts UK Trendsetters Will Love in 2025",
-      "How Voice Message Stickers are Revolutionising Wedding Gift Ideas in 2025",
-      "The Ultimate Guide to Creating Heartfelt Personalized Gifts in the UK",
-      "5 Creative Wedding Gift Ideas Using SayPlay Voice Message Stickers",
-      "Why Audio-Enabled Personalization is the Biggest Gift Trend of 2025"
+      "Top Personalized Gift Trends in the UK for 2025: Why Voice Messages Are the Next Big Thing",
+      "Unique Wedding Gift Ideas 2025: How to Use Voice Message Stickers for the Happy Couple",
+      "10 Unique Gifts in the UK That Stand Out (And How to Personalize Them with Voice Stickers)",
+      "The Ultimate Guide to Voice Message Gifts: Adding a Personal Touch to Every Occasion",
+      "Creative Wedding Gift Ideas: Why UK Brides and Grooms Love Personalized Voice Stickers in 2025"
     ]
   }
 }
